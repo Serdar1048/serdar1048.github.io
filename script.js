@@ -186,6 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const reportTitleTop = document.getElementById('report-title-top');
         if (reportTitleTop) reportTitleTop.textContent = project.title;
 
+        // Setup Report View Code Button
+        const btnReportViewCode = document.getElementById('btn-report-view-code');
+        if (btnReportViewCode) {
+            let ghLink = project.github || '#';
+            if (ghLink !== '#' && !/^https?:\/\//i.test(ghLink)) {
+                ghLink = 'https://' + ghLink;
+            }
+            btnReportViewCode.href = ghLink;
+        }
+
         reportTitle.textContent = project.title;
         reportImage.src = project.image;
 
