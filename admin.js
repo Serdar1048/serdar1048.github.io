@@ -182,6 +182,7 @@ function showEditForm() {
     document.getElementById('edit-image').value = "";
     document.getElementById('edit-github').value = "";
     document.getElementById('edit-demo').value = "";
+    document.getElementById('edit-technologies').value = "";
     document.getElementById('edit-details').value = "";
 }
 
@@ -198,6 +199,7 @@ window.editProject = (id) => {
     document.getElementById('edit-image').value = project.image;
     document.getElementById('edit-github').value = project.github;
     document.getElementById('edit-demo').value = project.demo_url;
+    document.getElementById('edit-technologies').value = (project.technologies || []).join(', ');
     document.getElementById('edit-details').value = project.details;
 };
 
@@ -218,6 +220,7 @@ window.saveProject = () => {
         image: document.getElementById('edit-image').value,
         github: document.getElementById('edit-github').value,
         demo_url: document.getElementById('edit-demo').value,
+        technologies: document.getElementById('edit-technologies').value.split(',').map(t => t.trim()).filter(t => t),
         details: document.getElementById('edit-details').value
     };
 
