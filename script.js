@@ -125,6 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="p-6">
                     <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">${project.title}</h3>
                     <p class="text-slate-600 line-clamp-2">${project.description}</p>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        ${project.technologies ? project.technologies.map(tech => `
+                            <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
+                                ${tech}
+                            </span>
+                        `).join('') : ''}
+                    </div>
                     <div class="mt-4 flex items-center text-sm font-medium text-primary">
                         İncele
                         <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
