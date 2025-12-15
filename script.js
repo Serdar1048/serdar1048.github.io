@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         home: document.getElementById('home'),
         portfolio: document.getElementById('portfolio'),
         about: document.getElementById('about'),
+        contact: document.getElementById('contact'),
         detail: document.getElementById('project-detail'),
         report: document.getElementById('project-report')
     };
