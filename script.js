@@ -283,6 +283,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Call initial routing immediately
     handleInitialRouting();
+
+    // Load Project Data
+    fetch(`projects.json?v=${new Date().getTime()}`)
         .then(response => response.json())
         .then(projects => {
             allProjects = projects;
