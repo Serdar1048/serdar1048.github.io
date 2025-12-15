@@ -103,9 +103,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let allProjects = [];
 
     // --- Specific Section Logic ---
+    // --- Specific Section Logic ---
     window.initGraph = () => {
         const container = document.getElementById('skills-graph');
         if (!container) return;
+
+        // Check if Vis.js is loaded
+        if (typeof vis === 'undefined') {
+            console.log('Vis.js not ready, retrying in 200ms...');
+            setTimeout(window.initGraph, 200);
+            return;
+        }
 
         // Prevent re-initialization if already present (check if child canvas exists)
         if (container.querySelector('canvas')) return;
