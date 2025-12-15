@@ -654,8 +654,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     // Allowed Domains and TLDs
-    const allowedProviders = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'live.com', 'icloud.com', 'yandex.com', 'protonmail.com', 'msn.com'];
-    const allowedTLDs = ['com', 'net', 'org', 'edu', 'gov', 'tr', 'io', 'co', 'uk', 'de', 'fr', 'us', 'eu', 'info', 'biz', 'edu.tr', 'gov.tr', 'org.tr', 'av.tr', 'k12.tr', 'pol.tr', 'bel.tr'];
+    // Allowed Major Providers (Strict List)
+    const allowedProviders = [
+        'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'live.com',
+        'icloud.com', 'yandex.com', 'protonmail.com', 'msn.com', 'me.com', 'mac.com'
+    ];
+
+    // Trusted Institutional/Academic TLDs (Allowed for ANY domain)
+    // Generic TLDs like .com, .net are EXCLUDED here.
+    const institutionalTLDs = [
+        'edu', 'gov', 'mil',
+        'edu.tr', 'gov.tr', 'av.tr', 'k12.tr', 'pol.tr', 'bel.tr', 'tsk.tr',
+        'ac.uk', 'gov.uk', 'ac.jp'
+    ];
 
     const isValidDomain = (email) => {
         if (!email.includes('@')) return false;
