@@ -645,7 +645,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const scrollPercentage = (scrollTop / scrollHeight) * 100;
         progressBar.style.width = `${scrollPercentage}%`;
+        progressBar.style.width = `${scrollPercentage}%`;
     });
+
+    // --- Email Validation Logic ---
+    const emailInput = document.getElementById('email');
+    const emailError = document.getElementById('email-error');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (emailInput && emailError) {
+        emailInput.addEventListener('input', function () {
+            const val = this.value.trim();
+            // Show error if value exists and regex fails
+            if (val.length > 0 && !emailRegex.test(val)) {
+                emailError.textContent = 'Lütfen geçerli bir email adresi giriniz (örn: isim@site.com)';
+                emailError.classList.remove('hidden');
+                this.classList.add('border-red-500', 'focus:ring-red-200');
+                this.classList.remove('border-slate-200', 'focus:border-primary', 'focus:ring-primary/20');
+            } else {
+                // Hide error if empty or valid (HTML5 'required' handles empty on submit)
+                emailError.classList.add('hidden');
+                this.classList.remove('border-red-500', 'focus:ring-red-200');
+                this.classList.add('border-slate-200', 'focus:border-primary', 'focus:ring-primary/20');
+            }
+        });
+
+        // Also block submit if invalid (double check)
+        emailInput.addEventListener('blur', function () {
+            // Optional: Validate on blur to be sure
+            if (this.value.length > 0 && !emailRegex.test(this.value.trim())) {
+                // Ensure error is visible
+                emailError.classList.remove('hidden');
+            }
+        });
+    }
 
     // --- Contact Form AJAX Logic ---
     const contactForm = document.getElementById('contact-form');
