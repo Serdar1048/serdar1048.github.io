@@ -651,7 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Email Validation Logic ---
     const emailInput = document.getElementById('email');
     const emailError = document.getElementById('email-error');
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
     if (emailInput && emailError) {
         emailInput.addEventListener('input', function () {
@@ -697,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // JS Validation Check
             const emailVal = form.querySelector('input[name="email"]').value;
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
             if (!emailRegex.test(emailVal)) {
                 statusDiv.innerHTML = "Hata: Lütfen geçerli bir email adresi giriniz.";
                 statusDiv.className = "text-center p-3 rounded-lg text-sm font-medium bg-red-50 text-red-600 animate-shake";
