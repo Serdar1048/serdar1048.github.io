@@ -720,6 +720,22 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span>Gönderiliyor...</span> ⏳';
 
+            // Rate Limiting (15 Minutes)
+            const lastSubmission = localStorage.getItem('last_submission_time');
+            if (lastSubmission) {
+                const timeDiff = Date.now() - parseInt(lastSubmission);
+                const minutesLeft = 15 - Math.floor(timeDiff / (1000 * 60));
+
+                if (minutesLeft > 0) {
+                    statusDiv.innerHTML = `Hata: Çok sık mesaj gönderdiniz. Lütfen ${minutesLeft} dakika bekleyiniz.`;
+                    statusDiv.className = "text-center p-3 rounded-lg text-sm font-medium bg-orange-50 text-orange-600 animate-shake";
+                    statusDiv.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    return;
+                }
+            }
+
             // JS Validation Check
             const nameVal = form.querySelector('input[name="name"]').value.trim();
             const messageVal = form.querySelector('textarea[name="message"]').value.trim();
@@ -765,6 +781,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     statusDiv.className = "text-center p-3 rounded-lg text-sm font-medium bg-green-50 text-green-600 animate-fade-in-up";
                     statusDiv.classList.remove('hidden');
                     form.reset(); // Clear inputs
+
+                    // Save Submission Time for Rate Limiting
+                    localStorage.setItem('last_submission_time', Date.now());
 
                     // Remove success message after 5 seconds
                     setTimeout(() => {
