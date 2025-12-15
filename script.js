@@ -653,12 +653,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailError = document.getElementById('email-error');
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
+    // Allowed Domains and TLDs
+    const allowedProviders = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'live.com', 'icloud.com', 'yandex.com', 'protonmail.com', 'msn.com'];
+    const allowedTLDs = ['com', 'net', 'org', 'edu', 'gov', 'tr', 'io', 'co', 'uk', 'de', 'fr', 'us', 'eu', 'info', 'biz', 'edu.tr', 'gov.tr', 'org.tr', 'av.tr', 'k12.tr', 'pol.tr', 'bel.tr'];
+
+    const isValidDomain = (email) => {
+        if (!email.includes('@')) return false;
+        const domain = email.split('@')[1].toLowerCase();
+
+        // 1. Check if it's a known major provider
+        if (allowedProviders.includes(domain)) return true;
+
+        // 2. Check TLDs
+        // Split domain by dot to get parts (e.g. 'sub.example.co.uk' -> ['sub', 'example', 'co', 'uk'])
+        // We check if the ending matches any of our allowed TLDs
+        for (const tld of allowedTLDs) {
+            // Check exact TLD match at the end
+            if (domain.endsWith('.' + tld)) return true;
+        }
+        return false;
+    };
+
     if (emailInput && emailError) {
         emailInput.addEventListener('input', function () {
             const val = this.value.trim();
-            // Show error if value exists and regex fails
-            if (val.length > 0 && !emailRegex.test(val)) {
-                emailError.textContent = 'Lütfen geçerli bir email adresi giriniz (örn: isim@site.com)';
+            // Show error if value exists and regex fails OR domain is invalid
+            if (val.length > 0 && (!emailRegex.test(val) || !isValidDomain(val))) {
+                if (!emailRegex.test(val)) {
+                    emailError.textContent = 'Lütfen geçerli bir email adresi giriniz.';
+                } else {
+                    emailError.textContent = 'Lütfen geçerli bir e-posta sağlayıcısı kullanınız (gmail, hotmail, edu, gov vb).';
+                }
                 emailError.classList.remove('hidden');
                 this.classList.add('border-red-500', 'focus:ring-red-200');
                 this.classList.remove('border-slate-200', 'focus:border-primary', 'focus:ring-primary/20');
@@ -712,8 +737,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Check Email Regex
-            if (!emailRegex.test(emailVal)) {
-                statusDiv.innerHTML = "Hata: Lütfen geçerli bir email adresi giriniz.";
+            if (!emailRegex.test(emailVal) || !isValidDomain(emailVal)) {
+                if (!emailRegex.test(emailVal)) {
+                    statusDiv.innerHTML = "Hata: Lütfen geçerli bir email adresi giriniz.";
+                } else {
+                    statusDiv.innerHTML = "Hata: Lütfen geçerli bir e-posta sağlayıcısı kullanınız.";
+                }
                 statusDiv.className = "text-center p-3 rounded-lg text-sm font-medium bg-red-50 text-red-600 animate-shake";
                 statusDiv.classList.remove('hidden');
                 submitBtn.disabled = false;
