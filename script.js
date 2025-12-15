@@ -45,6 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show target
         if (sections[sectionName]) {
             sections[sectionName].classList.remove('hidden');
+            // Init graph if about section is shown
+            if (sectionName === 'about') {
+                setTimeout(() => initGraph(), 100); // Slight delay for render
+            }
         }
 
         // Scroll top
@@ -97,6 +101,104 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Data Loading ---
     let allProjects = [];
+
+    // --- Specific Section Logic ---
+    window.initGraph = () => {
+        const container = document.getElementById('skills-graph');
+        if (!container) return;
+
+        // Prevent re-initialization if already present (check if child canvas exists)
+        if (container.querySelector('canvas')) return;
+
+        const nodes = new vis.DataSet([
+            // Center
+            { id: 1, label: 'Serdar', color: '#1e293b', font: { color: 'white', size: 20 }, size: 30 },
+
+            // Level 1 (Core)
+            { id: 2, label: 'Data Science', color: '#3b82f6', size: 25 },
+            { id: 3, label: 'Development', color: '#3b82f6', size: 25 },
+
+            // Level 2 - Data Science
+            { id: 4, label: 'Python', color: '#60a5fa' },
+            { id: 5, label: 'Machine Learning', color: '#60a5fa' },
+            { id: 6, label: 'Deep Learning', color: '#60a5fa' },
+
+            // Level 2 - Dev
+            { id: 7, label: 'Web Dev', color: '#93c5fd' },
+            { id: 8, label: 'Tools', color: '#93c5fd' },
+
+            // Level 3 - Tech
+            { id: 9, label: 'Pandas', color: '#e2e8f0' },
+            { id: 10, label: 'NumPy', color: '#e2e8f0' },
+            { id: 11, label: 'Scikit-Learn', color: '#e2e8f0' },
+            { id: 12, label: 'TensorFlow', color: '#e2e8f0' },
+            { id: 13, label: 'HTML/CSS', color: '#e2e8f0' },
+            { id: 14, label: 'Tailwind', color: '#e2e8f0' },
+            { id: 15, label: 'Streamlit', color: '#e2e8f0' },
+            { id: 16, label: 'Git', color: '#e2e8f0' },
+            { id: 17, label: 'SQL', color: '#e2e8f0' }
+        ]);
+
+        const edges = new vis.DataSet([
+            { from: 1, to: 2 },
+            { from: 1, to: 3 },
+
+            { from: 2, to: 4 },
+            { from: 2, to: 5 },
+            { from: 2, to: 6 },
+
+            { from: 3, to: 7 },
+            { from: 3, to: 8 },
+
+            { from: 4, to: 9 },
+            { from: 4, to: 10 },
+            { from: 4, to: 11 },
+            { from: 4, to: 12 },
+            { from: 4, to: 15 }, // Streamlit uses Python
+
+            { from: 5, to: 11 },
+            { from: 5, to: 12 },
+
+            { from: 7, to: 13 },
+            { from: 7, to: 14 },
+            { from: 7, to: 15 },
+
+            { from: 8, to: 16 },
+            { from: 8, to: 17 },
+
+            { from: 4, to: 17 } // Python <-> SQL
+        ]);
+
+        const data = { nodes, edges };
+        const options = {
+            nodes: {
+                shape: 'dot',
+                font: { face: 'Inter', color: '#1e293b' },
+                borderWidth: 0,
+                shadow: true
+            },
+            edges: {
+                width: 1,
+                color: { color: '#cbd5e1', highlight: '#3b82f6' },
+                smooth: { type: 'continuous' }
+            },
+            physics: {
+                stabilization: false,
+                barnesHut: {
+                    gravitationalConstant: -2000,
+                    springConstant: 0.04,
+                    springLength: 95
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200,
+                zoomView: false
+            }
+        };
+
+        new vis.Network(container, data, options);
+    };
 
     // Pre-Fetch Routing: Handle static pages immediately to prevent flash
     handleStaticRouting();
