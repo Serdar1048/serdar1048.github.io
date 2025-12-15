@@ -260,23 +260,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Pre-Fetch Routing: Handle static pages immediately to prevent flash
-    handleStaticRouting();
+    // Pre-Fetch Routing: Handle static pages immediately to prevent flash
+    // handleStaticRouting(); // Removed legacy function call
 
     // Cache busting: Add timestamp to force fresh fetch
     // --- Initial Load Logic ---
     // Handle Refresh/Direct Link (Check Hash)
     const handleInitialRouting = () => {
-        const hash = window.location.hash.slice(1); // Remove '#'
-        if (hash) {
-            // Check if hash matches a known section
-            if (sections[hash]) {
-                showSection(hash);
-            } else {
-                // Default to home if hash is invalid
-                showSection('home');
-            }
+        const hash = window.location.hash;
+
+        // If it's a deep link (Project/Report), wait for data loading (don't redirect to home)
+        if (hash.startsWith('#project-') || hash.startsWith('#report-')) {
+            return;
+        }
+
+        const sectionName = hash.slice(1); // Remove '#'
+
+        if (sectionName && sections[sectionName]) {
+            showSection(sectionName);
         } else {
-            // No hash, default to home
+            // Default to home only if no hash or invalid hash
             showSection('home');
         }
     };
@@ -386,19 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Routing Handlers ---
 
-    function handleStaticRouting() {
-        const hash = window.location.hash;
-        // If it's a data route, do nothing (wait for data), otherwise show static section
-        if (!hash.startsWith('#project-') && !hash.startsWith('#report-')) {
-            if (hash === '#portfolio') {
-                showSection('portfolio');
-            } else if (hash === '#about') {
-                showSection('about');
-            } else {
-                showSection('home');
-            }
-        }
-    }
+    /* Legacy handleStaticRouting removed */
 
     function handleDataDependentRouting() {
         const hash = window.location.hash;
