@@ -475,39 +475,47 @@
                         </div>
                         <h3 class="text-2xl font-bold text-slate-800 mb-6">Hangi alanda çözüm arıyorsunuz?</h3>
 
-                        <div class="flex flex-wrap justify-center gap-4">
+                        <div class="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:justify-center md:gap-4">
                             <button onclick="filterProjects('vision')"
-                                class="group flex items-center gap-3 px-6 py-4 bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-primary/30 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                                class="group flex flex-col md:flex-row items-center gap-2 md:gap-3 p-3 md:px-6 md:py-4 bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-primary/30 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full md:h-auto justify-center">
                                 <span class="text-2xl group-hover:scale-110 transition-transform">📷</span>
-                                <div class="text-left">
-                                    <div class="font-bold text-slate-700 group-hover:text-primary">Görüntü İşleme</div>
-                                    <div class="text-xs text-slate-500">YOLO, CNN, Detection</div>
+                                <div class="text-center md:text-left">
+                                    <div
+                                        class="font-bold text-sm md:text-base text-slate-700 group-hover:text-primary leading-tight">
+                                        Görüntü İşleme</div>
+                                    <div class="text-[10px] md:text-xs text-slate-500 hidden md:block mt-1">YOLO, CNN,
+                                        Detection</div>
                                 </div>
                             </button>
 
                             <button onclick="filterProjects('prediction')"
-                                class="group flex items-center gap-3 px-6 py-4 bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-primary/30 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                                class="group flex flex-col md:flex-row items-center gap-2 md:gap-3 p-3 md:px-6 md:py-4 bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-primary/30 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full md:h-auto justify-center">
                                 <span class="text-2xl group-hover:scale-110 transition-transform">📈</span>
-                                <div class="text-left">
-                                    <div class="font-bold text-slate-700 group-hover:text-primary">Tahminleme & Finans
-                                    </div>
-                                    <div class="text-xs text-slate-500">Regression, XGBoost, Time Series</div>
+                                <div class="text-center md:text-left">
+                                    <div
+                                        class="font-bold text-sm md:text-base text-slate-700 group-hover:text-primary leading-tight">
+                                        Tahminleme</div>
+                                    <div class="text-[10px] md:text-xs text-slate-500 hidden md:block mt-1">Regression,
+                                        XGBoost</div>
                                 </div>
                             </button>
 
                             <button onclick="filterProjects('nlp')"
-                                class="group flex items-center gap-3 px-6 py-4 bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-primary/30 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                                class="group flex flex-col md:flex-row items-center gap-2 md:gap-3 p-3 md:px-6 md:py-4 bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-primary/30 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full md:h-auto justify-center">
                                 <span class="text-2xl group-hover:scale-110 transition-transform">📝</span>
-                                <div class="text-left">
-                                    <div class="font-bold text-slate-700 group-hover:text-primary">Doğal Dil İşleme
-                                    </div>
-                                    <div class="text-xs text-slate-500">NLP, Sentiment, LLM</div>
+                                <div class="text-center md:text-left">
+                                    <div
+                                        class="font-bold text-sm md:text-base text-slate-700 group-hover:text-primary leading-tight">
+                                        Doğal Dil</div>
+                                    <div class="text-[10px] md:text-xs text-slate-500 hidden md:block mt-1">NLP,
+                                        Sentiment, LLM</div>
                                 </div>
                             </button>
 
                             <button onclick="filterProjects('all')"
-                                class="group flex items-center gap-2 px-6 py-4 bg-slate-900 text-white rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-slate-800">
-                                <span>Tümünü Göster</span>
+                                class="group flex flex-col md:flex-row items-center gap-2 p-3 md:px-6 md:py-4 bg-slate-900 text-white rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-slate-800 h-full md:h-auto justify-center">
+                                <span class="text-xl md:hidden">🔍</span>
+                                <span class="text-sm md:text-base font-medium">Tümü</span>
                             </button>
                         </div>
                     </div>
