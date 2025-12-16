@@ -738,8 +738,8 @@
 
                         <!-- Content -->
                         <!-- Content -->
-                        <!-- Mobile TOC Button (Floating) -->
-                        <div class="lg:hidden fixed bottom-6 right-6 z-50">
+                        <!-- Mobile TOC Button (Floating) - Moved to LEFT to avoid Back-to-Top overlap -->
+                        <div class="lg:hidden fixed bottom-6 left-6 z-[100]">
                             <button onclick="toggleMobileTOC()"
                                 class="bg-primary text-white p-3 rounded-full shadow-lg shadow-blue-500/40 hover:bg-blue-600 transition-colors flex items-center gap-2">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -752,10 +752,10 @@
 
                         <!-- Mobile TOC Drawer (Slide-out) -->
                         <div id="mobile-toc-overlay" onclick="toggleMobileTOC()"
-                            class="fixed inset-0 bg-black/50 z-[60] hidden transition-opacity opacity-0 lg:hidden backdrop-blur-sm">
+                            class="fixed inset-0 bg-black/50 z-[110] hidden transition-opacity opacity-0 lg:hidden backdrop-blur-sm">
                         </div>
                         <div id="mobile-toc-drawer"
-                            class="fixed inset-y-0 left-0 w-64 bg-white z-[70] transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden shadow-2xl flex flex-col">
+                            class="fixed inset-y-0 left-0 w-64 bg-white z-[120] transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden shadow-2xl flex flex-col">
                             <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                                 <h3 class="font-bold text-slate-800">İçindekiler</h3>
                                 <button onclick="toggleMobileTOC()"
@@ -793,7 +793,7 @@
             </svg>
         </button>
 
-        <script src="script.js?v=10"></script>
+        <script src="script.js?v=11"></script>
 </body>
 
 </html>
