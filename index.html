@@ -697,8 +697,9 @@
                     </svg>
                     Simülasyona Dön
                 </button>
-                <div class="h-6 w-px bg-slate-300"></div>
-                <h2 id="report-title-top" class="text-lg font-bold text-slate-800 truncate max-w-md">Proje Başlığı</h2>
+                <div class="h-6 w-px bg-slate-300 hidden md:block"></div>
+                <h2 id="report-title-top" class="text-lg font-bold text-slate-800 truncate max-w-md hidden md:block">
+                    Proje Başlığı</h2>
                 <div class="ml-auto">
                     <a id="btn-report-view-code" href="#" target="_blank"
                         class="px-4 py-2 text-sm bg-slate-800 text-white hover:bg-slate-900 rounded-lg transition-colors shadow-sm shadow-slate-500/30 whitespace-nowrap flex items-center gap-2">
@@ -736,24 +737,43 @@
                         </div>
 
                         <!-- Content -->
-                        <!-- Mobile TOC (Collapsible) -->
-                        <div class="lg:hidden mb-8 bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <!-- Content -->
+                        <!-- Mobile TOC Button (Floating) -->
+                        <div class="lg:hidden fixed bottom-6 right-6 z-50">
                             <button onclick="toggleMobileTOC()"
-                                class="flex items-center justify-between w-full text-left font-bold text-slate-700">
-                                <span>📋 İçindekiler</span>
-                                <svg id="mobile-toc-icon" class="w-5 h-5 transition-transform" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
+                                class="bg-primary text-white p-3 rounded-full shadow-lg shadow-blue-500/40 hover:bg-blue-600 transition-colors flex items-center gap-2">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7"></path>
+                                        d="M4 6h16M4 12h16m-7 6h7"></path>
                                 </svg>
+                                <span class="font-medium text-sm">İçindekiler</span>
                             </button>
-                            <nav id="mobile-toc-container"
-                                class="hidden mt-4 space-y-1 border-t border-slate-200 pt-4 max-h-64 overflow-y-auto">
+                        </div>
+
+                        <!-- Mobile TOC Drawer (Slide-out) -->
+                        <div id="mobile-toc-overlay" onclick="toggleMobileTOC()"
+                            class="fixed inset-0 bg-black/50 z-[60] hidden transition-opacity opacity-0 lg:hidden backdrop-blur-sm">
+                        </div>
+                        <div id="mobile-toc-drawer"
+                            class="fixed inset-y-0 left-0 w-64 bg-white z-[70] transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden shadow-2xl flex flex-col">
+                            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                <h3 class="font-bold text-slate-800">İçindekiler</h3>
+                                <button onclick="toggleMobileTOC()"
+                                    class="text-slate-500 hover:text-red-500 transition-colors">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <nav id="mobile-toc-container" class="p-4 overflow-y-auto flex-1 space-y-1">
                                 <!-- JS will inject here -->
                             </nav>
                         </div>
 
-                        <div id="report-content" class="overflow-hidden"></div>
+                        <div id="report-content"
+                            class="overflow-hidden prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-headings:break-words prose-a:break-all">
+                        </div>
 
                         <!-- Next Project Navigation -->
                         <div id="next-project-container" class="mt-16 pt-8 border-t border-slate-100">
