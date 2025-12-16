@@ -617,16 +617,30 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- TOC Generator ---
-    // --- Mobile TOC Toggle ---
+    // --- Mobile TOC Toggle (Drawer) ---
     window.toggleMobileTOC = () => {
-        const container = document.getElementById('mobile-toc-container');
-        const icon = document.getElementById('mobile-toc-icon');
-        if (container.classList.contains('hidden')) {
-            container.classList.remove('hidden');
-            icon.style.transform = 'rotate(180deg)';
+        const drawer = document.getElementById('mobile-toc-drawer');
+        const overlay = document.getElementById('mobile-toc-overlay');
+
+        if (!drawer || !overlay) return;
+
+        const isClosed = drawer.classList.contains('-translate-x-full');
+
+        if (isClosed) {
+            // Open
+            overlay.classList.remove('hidden');
+            // Small delay to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                drawer.classList.remove('-translate-x-full');
+            }, 10);
         } else {
-            container.classList.add('hidden');
-            icon.style.transform = 'rotate(0deg)';
+            // Close
+            drawer.classList.add('-translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 300); // Match transition duration
         }
     };
 
