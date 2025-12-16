@@ -88,11 +88,31 @@ document.addEventListener('DOMContentLoaded', () => {
             // Simple fallback for now
             showSection(event.state.section);
         } else {
-            // Default based on hash
-            if (window.location.hash === '#portfolio') {
-                showSection('portfolio');
+            // State yoksa Hash'i kontrol et (Yedek Mekanizma)
+            const hash = window.location.hash;
+            if (hash.startsWith('#project-')) {
+                const id = parseInt(hash.replace('#project-', ''));
+                if (!isNaN(id)) {
+                    openSimulation(id, false);
+                    return;
+                }
+            } else if (hash.startsWith('#report-')) {
+                const id = parseInt(hash.replace('#report-', ''));
+                if (!isNaN(id)) {
+                    openReport(id, false);
+                    return;
+                }
+            }
+
+            // Default
+            if (hash === '#portfolio') {
+                showSection('portfolio', false);
+            } else if (hash === '#about') {
+                showSection('about', false);
+            } else if (hash === '#contact') {
+                showSection('contact', false);
             } else {
-                showSection('home');
+                showSection('home', false);
             }
         }
     };
