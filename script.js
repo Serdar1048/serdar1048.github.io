@@ -173,112 +173,166 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { btn.innerHTML = originalIcon; }, 2000);
         }).catch(err => console.error('Copy failed', err));
     };
-    window.initGraph = () => {
+    // --- Binary Snake Game (Skills) ---
+    window.initGraph = () => { // Keeping function name same for compatibility with generic calls
         const container = document.getElementById('skills-graph');
         if (!container) return;
 
-        // Check if Vis.js is loaded
-        if (typeof vis === 'undefined') {
-            console.warn('Vis.js not ready, retrying...');
-            setTimeout(window.initGraph, 500);
-            return;
-        }
+        // Clear existing content (loaders etc)
+        container.innerHTML = '';
+        container.style.cursor = 'none'; // Hide default cursor inside game
 
-        // Clear loading text if present
-        const loader = document.getElementById('graph-loading');
-        if (loader) loader.style.display = 'none';
+        // Create Canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        container.appendChild(canvas);
 
-        // Check if canvas already exists
-        if (container.querySelector('canvas')) return;
+        // State
+        let width, height;
+        let mouseX = 0, mouseY = 0;
+        let snake = []; // {x, y, char}
+        const skills = [
+            'Python', 'Data Science', 'Machine Learning', 'Deep Learning',
+            'SQL', 'TensorFlow', 'Pandas', 'NumPy', 'Scikit-Learn',
+            'Web Dev', 'HTML/CSS', 'Tailwind', 'Git', 'Streamlit'
+        ];
+        let targets = []; // {x, y, text, eaten}
+        const snakeSpeed = 0.15; // Easing factor
+        const spacing = 20; // Space between trailing 0s
 
-        const nodes = new vis.DataSet([
-            // Center
-            { id: 1, label: 'Serdar', color: '#1e293b', font: { color: 'white', size: 20 }, size: 30 },
-
-            // Level 1 (Core)
-            { id: 2, label: 'Data Science', color: '#3b82f6', size: 25 },
-            { id: 3, label: 'Development', color: '#3b82f6', size: 25 },
-
-            // Level 2 - Data Science
-            { id: 4, label: 'Python', color: '#60a5fa' },
-            { id: 5, label: 'Machine Learning', color: '#60a5fa' },
-            { id: 6, label: 'Deep Learning', color: '#60a5fa' },
-
-            // Level 2 - Dev
-            { id: 7, label: 'Web Dev', color: '#93c5fd' },
-            { id: 8, label: 'Tools', color: '#93c5fd' },
-
-            // Level 3 - Tech
-            { id: 9, label: 'Pandas', color: '#e2e8f0' },
-            { id: 10, label: 'NumPy', color: '#e2e8f0' },
-            { id: 11, label: 'Scikit-Learn', color: '#e2e8f0' },
-            { id: 12, label: 'TensorFlow', color: '#e2e8f0' },
-            { id: 13, label: 'HTML/CSS', color: '#e2e8f0' },
-            { id: 14, label: 'Tailwind', color: '#e2e8f0' },
-            { id: 15, label: 'Streamlit', color: '#e2e8f0' },
-            { id: 16, label: 'Git', color: '#e2e8f0' },
-            { id: 17, label: 'SQL', color: '#e2e8f0' }
-        ]);
-
-        const edges = new vis.DataSet([
-            { from: 1, to: 2 },
-            { from: 1, to: 3 },
-
-            { from: 2, to: 4 },
-            { from: 2, to: 5 },
-            { from: 2, to: 6 },
-
-            { from: 3, to: 7 },
-            { from: 3, to: 8 },
-
-            { from: 4, to: 9 },
-            { from: 4, to: 10 },
-            { from: 4, to: 11 },
-            { from: 4, to: 12 },
-            { from: 4, to: 15 }, // Streamlit uses Python
-
-            { from: 5, to: 11 },
-            { from: 5, to: 12 },
-
-            { from: 7, to: 13 },
-            { from: 7, to: 14 },
-            { from: 7, to: 15 },
-
-            { from: 8, to: 16 },
-            { from: 8, to: 17 },
-
-            { from: 4, to: 17 } // Python <-> SQL
-        ]);
-
-        const data = { nodes, edges };
-        const options = {
-            nodes: {
-                shape: 'dot',
-                font: { face: 'Inter', color: '#1e293b' },
-                borderWidth: 0,
-                shadow: true
-            },
-            edges: {
-                width: 1,
-                color: { color: '#cbd5e1', highlight: '#3b82f6' },
-                smooth: { type: 'continuous' }
-            },
-            physics: {
-                stabilization: false,
-                barnesHut: {
-                    gravitationalConstant: -2000,
-                    springConstant: 0.04,
-                    springLength: 95
-                }
-            },
-            interaction: {
-                hover: true,
-                tooltipDelay: 200,
-                zoomView: false
+        // Resize
+        const resize = () => {
+            const rect = container.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width;
+            canvas.height = height;
+            // Center mouse initially
+            if (snake.length === 0) {
+                mouseX = width / 2;
+                mouseY = height / 2;
+                initSnake();
+                spawnTargets();
             }
         };
 
-        new vis.Network(container, data, options);
+        // Init Snake
+        const initSnake = () => {
+            snake = [];
+            // Head
+            snake.push({ x: width / 2, y: height / 2, char: '1' });
+            // Initial Body (some 0s)
+            for (let i = 1; i <= 5; i++) {
+                snake.push({ x: width / 2, y: height / 2 + (i * spacing), char: '0' });
+            }
+        };
+
+        // Spawn Targets
+        const spawnTargets = () => {
+            targets = [];
+            skills.forEach(skill => {
+                targets.push({
+                    x: Math.random() * (width - 100) + 50,
+                    y: Math.random() * (height - 50) + 25,
+                    text: skill,
+                    eaten: false
+                });
+            });
+        };
+
+        // Track Mouse
+        container.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+
+        // Touch support
+        container.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.touches[0].clientX - rect.left;
+            mouseY = e.touches[0].clientY - rect.top;
+        }, { passive: false });
+
+        // Game Loop
+        const loop = () => {
+            ctx.clearRect(0, 0, width, height);
+
+            // Styling variables
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 1. Move Head towards Mouse
+            const head = snake[0];
+            const dx = mouseX - head.x;
+            const dy = mouseY - head.y;
+            head.x += dx * snakeSpeed;
+            head.y += dy * snakeSpeed;
+
+            // 2. Move Body (Follow previous segment)
+            for (let i = 1; i < snake.length; i++) {
+                const curr = snake[i];
+                const prev = snake[i - 1];
+
+                const bdx = prev.x - curr.x;
+                const bdy = prev.y - curr.y;
+                const dist = Math.sqrt(bdx * bdx + bdy * bdy);
+
+                if (dist > spacing) {
+                    const angle = Math.atan2(bdy, bdx);
+                    curr.x = prev.x - Math.cos(angle) * spacing;
+                    curr.y = prev.y - Math.sin(angle) * spacing;
+                }
+            }
+
+            // 3. Draw Targets
+            ctx.font = 'bold 14px Inter, sans-serif';
+            targets.forEach(target => {
+                if (target.eaten) return;
+
+                // Draw Skill Text
+                ctx.fillStyle = '#64748b'; // Slate-500
+                ctx.fillText(target.text, target.x, target.y);
+
+                // Collision Detection
+                const distToHead = Math.hypot(head.x - target.x, head.y - target.y);
+                if (distToHead < 30) {
+                    target.eaten = true;
+                    // Add new '0' to tail
+                    const last = snake[snake.length - 1];
+                    snake.push({ x: last.x, y: last.y, char: '0' });
+
+                    // Optional: Respawn logic or "You collected X" effect? 
+                    // For now, let's keep them eaten (collected).
+
+                    // Check if all eaten?
+                    if (targets.every(t => t.eaten)) {
+                        setTimeout(spawnTargets, 2000); // Respawn all after 2s
+                    }
+                }
+            });
+
+            // 4. Draw Snake
+            ctx.font = 'bold 24px monospace';
+            snake.forEach((segment, index) => {
+                ctx.fillStyle = index === 0 ? '#3b82f6' : '#94a3b8'; // Blue head, slate tail
+                if (index === 0) ctx.fillStyle = '#2563eb';
+
+                // Shadow for visibility
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 4;
+                ctx.fillText(segment.char, segment.x, segment.y);
+                ctx.shadowBlur = 0;
+            });
+
+            requestAnimationFrame(loop);
+        };
+
+        // Start
+        window.addEventListener('resize', resize);
+        resize();
+        loop();
     };
 
     // Pre-Fetch Routing: Handle static pages immediately to prevent flash
