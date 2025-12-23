@@ -191,10 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mouse removed from physics
 
         const skills = [
-            'Python', 'Data Science', 'Machine Learning', 'Deep Learning',
-            'SQL', 'TensorFlow', 'Pandas', 'NumPy', 'Scikit-Learn',
-            'Web Dev', 'HTML/CSS', 'Tailwind', 'Git', 'Streamlit',
-            'Keras', 'PyTorch', 'Computer Vision', 'NLP', 'Docker'
+            'Machine Learning', 'Deep Learning', 'NumPy', 'Python', 'Pandas',
+            'TensorFlow', 'Kaggle', 'Colab', 'Data Science', 'Flutter',
+            'Scikit-Learn', 'PyTorch', 'Image Processing', 'Git', 'GitHub',
+            'Keras', 'NLP'
         ];
 
         class Particle {
@@ -210,11 +210,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Measure text width for bouncing logic
                 ctx.font = 'bold 14px Inter, sans-serif';
                 this.textWidth = ctx.measureText(text).width;
+                // Collision radius approx (half text width + padding)
+                this.radius = this.textWidth / 2 + 10;
             }
 
-            update() {
+            update(particles) {
                 // Bounds Check & Bounce (Considering Text Width)
-                // Keep text completely inside
                 const padding = 20;
 
                 if (this.x - this.textWidth / 2 < padding) {
@@ -238,6 +239,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Ambient Floating only
                 this.x += this.vx;
                 this.y += this.vy;
+
+                // Collision Detection with other particles
+                for (let other of particles) {
+                    if (other === this) continue;
+
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = this.radius + other.radius;
+
+                    if (dist < minDist) {
+                        // Collision detected!
+                        // Resolve Overlap (push apart)
+                        const overlap = minDist - dist;
+                        const nx = dx / dist; // Normalized collision vector x
+                        const ny = dy / dist; // Normalized collision vector y
+
+                        // Move apart proportional to overlap
+                        const moveX = nx * overlap * 0.5;
+                        const moveY = ny * overlap * 0.5;
+
+                        this.x -= moveX;
+                        this.y -= moveY;
+                        other.x += moveX;
+                        other.y += moveY;
+
+                        // Bounce (Exchange velocity component along normal)
+                        // Simplified: just swap velocities or reflect
+                        // Ideally: 1D elastic collision along normal
+
+                        // Relative velocity
+                        const dvx = other.vx - this.vx;
+                        const dvy = other.vy - this.vy;
+
+                        // Velocity along normal
+                        const velAlongNormal = dvx * nx + dvy * ny;
+
+                        // Do not resolve if velocities are separating
+                        if (velAlongNormal > 0) return;
+
+                        // Restitution (bounciness)
+                        const restitution = 1;
+
+                        // Impulse scalar
+                        let j = -(1 + restitution) * velAlongNormal;
+                        j /= 2; // Assuming equal mass
+
+                        // Apply impulse
+                        const impulseX = j * nx;
+                        const impulseY = j * ny;
+
+                        this.vx -= impulseX;
+                        this.vy -= impulseY;
+                        other.vx += impulseX;
+                        other.vy += impulseY;
+                    }
+                }
             }
 
             draw() {
@@ -259,15 +317,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.fillStyle = '#ffffff'; // Pure White
                 ctx.textAlign = 'center';
 
-                // Text Shadow (Outlining for contrast against lines)
-                ctx.shadowColor = 'rgba(15, 23, 42, 0.8)'; // Dark shadow (background color)
+                // Text Shadow
+                ctx.shadowColor = 'rgba(15, 23, 42, 0.8)';
                 ctx.shadowBlur = 4;
-                ctx.strokeText(this.text, this.x, this.y + this.size + 18); // Stroke for outline effect? Or just shadow.
-                // Reset shadow for fill
+                ctx.strokeText(this.text, this.x, this.y + this.size + 18);
                 ctx.shadowBlur = 0;
 
-                // Simple background box for text? No, user wants "clean". 
-                // Let's use strong drop shadow + bold white.
                 ctx.shadowColor = '#000';
                 ctx.shadowBlur = 6;
                 ctx.fillText(this.text, this.x, this.y + this.size + 18);
@@ -324,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Update and Draw Particles
             particles.forEach(p => {
-                p.update();
+                p.update(particles);
                 p.draw();
             });
 
