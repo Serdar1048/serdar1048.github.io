@@ -173,46 +173,91 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { btn.innerHTML = originalIcon; }, 2000);
         }).catch(err => console.error('Copy failed', err));
     };
-    // --- Binary Collector Game (v5: 3D Arrow) ---
+    // --- Interactive Neural Network (v6) ---
     window.initGraph = () => {
         const container = document.getElementById('skills-graph');
         if (!container) return;
 
         container.innerHTML = '';
-        container.style.cursor = 'none';
-
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         container.appendChild(canvas);
 
-        // Game State
         let width, height;
-        let mouseX = 0, mouseY = 0;
+        let particles = [];
+        let mouse = { x: -1000, y: -1000 };
 
-        // Rigid Player Object
-        const player = {
-            x: 0,
-            y: 0,
-            angle: 0,
-            speed: 0.12,
-            length: 160, // Total length (approx)
-            headSize: 40,
-            ringRadiusX: 50,
-            ringRadiusY: 50
-        };
-
-        const skillsRaw = [
+        const skills = [
             'Python', 'Data Science', 'Machine Learning', 'Deep Learning',
             'SQL', 'TensorFlow', 'Pandas', 'NumPy', 'Scikit-Learn',
-            'Web Dev', 'HTML/CSS', 'Tailwind', 'Git', 'Streamlit'
+            'Web Dev', 'HTML/CSS', 'Tailwind', 'Git', 'Streamlit',
+            'Keras', 'PyTorch', 'Computer Vision', 'NLP', 'Docker'
         ];
 
-        const colors = [
-            '#FCA5A5', '#FDBA74', '#FDE047', '#86EFAC', '#67E8F9',
-            '#93C5FD', '#A5B4FC', '#C4B5FD', '#F0ABFC', '#FDA4AF'
-        ];
+        class Particle {
+            constructor(text) {
+                this.text = text;
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.8; // Gentle random speed
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.size = 3 + Math.random() * 2;
+                this.color = '#3b82f6'; // Blue-500
+            }
 
-        let orbs = [];
+            update() {
+                // Bounds Check & Bounce
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Mouse Interaction (Repel)
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const interactRadius = 200;
+
+                if (dist < interactRadius) {
+                    const forceDirectionX = dx / dist;
+                    const forceDirectionY = dy / dist;
+                    const force = (interactRadius - dist) / interactRadius;
+                    // Push away
+                    const repelStrength = 0.5; // "Magnetic" feel
+                    this.vx -= forceDirectionX * force * repelStrength;
+                    this.vy -= forceDirectionY * force * repelStrength;
+                }
+
+                // Friction to return to normal speed
+                this.vx *= 0.99;
+                this.vy *= 0.99;
+
+                // Keep it moving slightly always
+                if (Math.abs(this.vx) < 0.1) this.vx += (Math.random() - 0.5) * 0.05;
+                if (Math.abs(this.vy) < 0.1) this.vy += (Math.random() - 0.5) * 0.05;
+
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw() {
+                // Glow Effect
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.2)'; // Blue glow
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#60a5fa'; // Lighter blue core
+                ctx.fill();
+
+                // Text
+                ctx.font = '12px Inter, sans-serif';
+                ctx.fillStyle = '#e2e8f0'; // Slate-200
+                ctx.textAlign = 'center';
+                ctx.fillText(this.text, this.x, this.y + this.size + 15);
+            }
+        }
 
         const init = () => {
             const rect = container.getBoundingClientRect();
@@ -221,244 +266,65 @@ document.addEventListener('DOMContentLoaded', () => {
             canvas.width = width;
             canvas.height = height;
 
-            player.x = width / 2;
-            player.y = height / 2;
-
-            spawnOrbs();
+            particles = [];
+            skills.forEach(skill => {
+                particles.push(new Particle(skill));
+            });
+            // Add some extra dummy nodes for density if needed
+            for (let i = 0; i < 10; i++) {
+                particles.push(new Particle(""));
+            }
         };
 
-        const spawnOrbs = () => {
-            orbs = skillsRaw.map((skill, index) => ({
-                text: skill,
-                x: Math.random() * (width - 100) + 50,
-                y: Math.random() * (height - 100) + 50,
-                vx: (Math.random() - 0.5) * 0.2, // Slower drift
-                vy: (Math.random() - 0.5) * 0.2,
-                r: 16 + Math.random() * 4,
-                color: colors[index % colors.length],
-                state: 'floating',
-                collectionIndex: -1
-            }));
-        };
-
-        // Input
-        const updateMouse = (x, y) => {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = x - rect.left;
-            mouseY = y - rect.top;
-        };
-        container.addEventListener('mousemove', e => updateMouse(e.clientX, e.clientY));
-        container.addEventListener('touchmove', e => {
-            e.preventDefault();
-            updateMouse(e.touches[0].clientX, e.touches[0].clientY);
-        }, { passive: false });
-
-        // Loop
-        const loop = () => {
+        const animate = () => {
             ctx.clearRect(0, 0, width, height);
 
-            // 1. Physics: Rigid Movement
-            // Calculate target angle
-            const dx = mouseX - player.x;
-            const dy = mouseY - player.y;
-            const targetAngle = Math.atan2(dy, dx);
+            // Draw Connections First
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const connectionDist = 150;
 
-            // Smooth Rotation (optional, but snappy is better for "no slip")
-            player.angle = targetAngle;
-
-            // Move towards mouse (but stop if close to avoid jitter)
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist > 5) {
-                player.x += dx * player.speed;
-                player.y += dy * player.speed;
+                    if (dist < connectionDist) {
+                        ctx.beginPath();
+                        const opacity = 1 - (dist / connectionDist);
+                        ctx.strokeStyle = `rgba(148, 163, 184, ${opacity * 0.5})`; // Slate-400 lines
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
             }
 
-            // 2. Draw 3D Arrow Wrapper
-            ctx.save();
-            ctx.translate(player.x, player.y);
-            ctx.rotate(player.angle);
-
-            // Draw Graphics (Local Coords: Mouse is at right (0 rads) effectively)
-
-            // --- A. The Shaft ---
-            // Connects Ring (Tail) to Head.
-            // Ring is at x = -80, Head at x = +40
-            const lingGrad = ctx.createLinearGradient(-60, 0, 0, 0);
-            lingGrad.addColorStop(0, '#cbd5e1'); // light slate
-            lingGrad.addColorStop(0.5, '#f8fafc'); // white highlight
-            lingGrad.addColorStop(1, '#94a3b8'); // dark slate
-
-            ctx.beginPath();
-            ctx.rect(-80, -8, 100, 16); // Thick shaft
-            ctx.fillStyle = lingGrad;
-            ctx.fill();
-            // Shadow
-            ctx.shadowColor = 'rgba(0,0,0,0.3)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetY = 5;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetY = 0;
-
-
-            // --- B. The Ring (Tail) ---
-            // Drawn as a Torus at the back (Left side in local space)
-            // Position: x = -80
-
-            ctx.beginPath();
-            ctx.arc(-80, 0, 40, 0, Math.PI * 2);
-            // 3D Ring Effect using Gradient Stroke
-            const ringGrad = ctx.createLinearGradient(-120, -40, -40, 40);
-            ringGrad.addColorStop(0, '#f1f5f9'); // White-ish
-            ringGrad.addColorStop(0.5, '#94a3b8'); // Metallic Grey
-            ringGrad.addColorStop(1, '#475569'); // Darker
-
-            ctx.lineWidth = 12;
-            ctx.strokeStyle = ringGrad;
-            ctx.stroke();
-
-            // Inner Fill (Dark Hole)
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-            ctx.fill();
-
-
-            // --- C. The Head (Arrow) ---
-            // Position: x = +20 to +60
-            ctx.beginPath();
-            ctx.moveTo(20, -30);
-            ctx.lineTo(80, 0); // Tip
-            ctx.lineTo(20, 30);
-            ctx.lineTo(20, -30);
-
-            const headGrad = ctx.createLinearGradient(20, -30, 20, 30);
-            headGrad.addColorStop(0, '#2563eb'); // Blue Top
-            headGrad.addColorStop(0.5, '#60a5fa'); // Lighter Middle
-            headGrad.addColorStop(1, '#1e40af'); // Dark Blue Bottom
-
-            ctx.fillStyle = headGrad;
-            ctx.fill();
-
-            // Head Glow
-            ctx.shadowColor = 'rgba(59, 130, 246, 0.6)';
-            ctx.shadowBlur = 20;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            // 1 Text on Head
-            ctx.save();
-            // Counter-rotate or align? Let's leave aligned with arrow because it's rigid.
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 24px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('1', 35, 2);
-            ctx.restore();
-
-            ctx.restore(); // End of Player Transform
-
-
-            // 3. Update & Draw Orbs
-            // Getting the "Tip" world position for fleeing logic
-            // Tip is at local (80, 0).
-            const tipX = player.x + Math.cos(player.angle) * 80;
-            const tipY = player.y + Math.sin(player.angle) * 80;
-
-            const collectedOrbs = orbs.filter(o => o.state === 'collected');
-
-            orbs.forEach(orb => {
-                if (orb.state === 'floating') {
-                    // Flee from Tip
-                    const dx = orb.x - tipX;
-                    const dy = orb.y - tipY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 200) {
-                        const force = (200 - dist) * 0.0005;
-                        orb.vx += dx * force;
-                        orb.vy += dy * force;
-                    }
-
-                    // Friction
-                    orb.vx *= 0.96;
-                    orb.vy *= 0.96;
-
-                    // Boundaries
-                    if (orb.x < 30 || orb.x > width - 30) orb.vx *= -1;
-                    if (orb.y < 30 || orb.y > height - 30) orb.vy *= -1;
-
-                    orb.x += orb.vx;
-                    orb.y += orb.vy;
-
-                    // Eat Check (Distance to Tip)
-                    if (dist < 50) {
-                        orb.state = 'collected';
-                        orb.collectionIndex = collectedOrbs.length;
-                    }
-                    drawOrb(orb);
-
-                } else if (orb.state === 'collected') {
-                    // Calculate Target Position ON THE RING
-                    // The ring is at local x = -80.
-                    // Slots distributed around the ring circle
-
-                    const angleOffset = (orb.collectionIndex * (Math.PI / 4)); // 45 deg separation
-                    // Local coords on ring center (-80,0) with radius 40
-                    const r = 40;
-                    const localX = -80 + r * Math.cos(angleOffset);
-                    const localY = r * Math.sin(angleOffset);
-
-                    // Rotate local to world based on player.angle
-                    // x' = x*cos - y*sin
-                    // y' = x*sin + y*cos
-                    // Then translate by player.x, player.y
-                    const worldTargetX = player.x + (localX * Math.cos(player.angle) - localY * Math.sin(player.angle));
-                    const worldTargetY = player.y + (localX * Math.sin(player.angle) + localY * Math.cos(player.angle));
-
-                    // Lerp to target
-                    orb.x += (worldTargetX - orb.x) * 0.15;
-                    orb.y += (worldTargetY - orb.y) * 0.15;
-
-                    drawOrb(orb);
-                }
+            // Update and Draw Particles
+            particles.forEach(p => {
+                p.update();
+                p.draw();
             });
 
-            requestAnimationFrame(loop);
+            requestAnimationFrame(animate);
         };
 
-        const drawOrb = (orb) => {
-            // Ball
-            ctx.beginPath();
-            ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
-
-            // 3D Ball Effect (Radial Gradient)
-            const g = ctx.createRadialGradient(orb.x - orb.r / 3, orb.y - orb.r / 3, orb.r / 4, orb.x, orb.y, orb.r);
-            g.addColorStop(0, '#fff');
-            g.addColorStop(1, orb.color);
-            ctx.fillStyle = g;
-            ctx.fill();
-
-            // Shadow
-            ctx.shadowColor = 'rgba(0,0,0,0.2)';
-            ctx.shadowBlur = 4;
-            ctx.stroke(); // faint outline
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-            ctx.shadowBlur = 0;
-
-            // Text
-            ctx.font = 'bold 11px Inter, sans-serif';
-            ctx.fillStyle = '#fff';
-            ctx.textAlign = 'center';
-            // Shadow for text readability
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            ctx.shadowBlur = 4;
-            ctx.fillText(orb.text, orb.x, orb.y + orb.r + 14);
-            ctx.shadowBlur = 0;
+        // Event Listeners
+        const updateMouse = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
         };
+
+        container.addEventListener('mousemove', updateMouse);
+        container.addEventListener('mouseleave', () => {
+            mouse.x = -1000;
+            mouse.y = -1000;
+        });
 
         window.addEventListener('resize', init);
+
         init();
-        loop();
+        animate();
     };
 
     // Pre-Fetch Routing: Handle static pages immediately to prevent flash
