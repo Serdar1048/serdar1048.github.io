@@ -48,7 +48,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=2">
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -310,13 +310,18 @@
                             <span class="text-2xl">🕸️</span> Yetenek Ağı
                         </h3>
                         <p class="text-slate-600 mb-4 text-sm">
-                            Baloncukları sürükleyerek yeteneklerim arasındaki bağlantıları keşfedin.
+                            <strong class="text-primary">İnteraktif Oyun:</strong> Mouse ile "1" yılanını kontrol ederek
+                            yetenekleri toplayın! 🐍
                         </p>
 
                         <!-- Graph Container -->
                         <div id="skills-graph"
-                            class="w-full h-[500px] bg-slate-50 rounded-2xl border border-slate-200 shadow-inner overflow-hidden cursor-move touch-none">
-                            <!-- Vis.js canvas will be injected here -->
+                            class="w-full h-[500px] bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl overflow-hidden cursor-none touch-none relative">
+                            <!-- Canvas injected here -->
+                            <div
+                                class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                                <span class="text-9xl font-bold text-slate-800">101</span>
+                            </div>
                         </div>
                     </div>
                 </div>
