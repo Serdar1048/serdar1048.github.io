@@ -190,10 +190,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let width, height;
         let mouseX = 0, mouseY = 0;
 
-        // Player: '1' (Head) and '0' (Body/Storage)
+        // Player
         const player = {
             head: { x: 0, y: 0, char: '1', size: 40 },
-            body: { x: 0, y: 0, char: '0', size: 100 }, // Big '0' container
+            body: { x: 0, y: 0, width: 140, height: 80 }, // Horizontal Ellipse dimensions
             angle: 0
         };
 
@@ -203,15 +203,13 @@ document.addEventListener('DOMContentLoaded', () => {
             'Web Dev', 'HTML/CSS', 'Tailwind', 'Git', 'Streamlit'
         ];
 
-        // Pastel Colors
         const colors = [
             '#FCA5A5', '#FDBA74', '#FDE047', '#86EFAC', '#67E8F9',
             '#93C5FD', '#A5B4FC', '#C4B5FD', '#F0ABFC', '#FDA4AF'
         ];
 
-        let orbs = []; // The skill balls
+        let orbs = [];
 
-        // Initialization
         const init = () => {
             const rect = container.getBoundingClientRect();
             width = rect.width;
@@ -232,19 +230,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 text: skill,
                 x: Math.random() * (width - 100) + 50,
                 y: Math.random() * (height - 100) + 50,
-                r: 15 + Math.random() * 5, // Radius
+                vx: (Math.random() - 0.5) * 0.5, // Initial drift
+                vy: (Math.random() - 0.5) * 0.5,
+                r: 15 + Math.random() * 5,
                 color: colors[index % colors.length],
-                state: 'floating', // floating, collected
-                targetX: 0, // For collected animation
-                targetY: 0,
-                angle: 0, // Position on ring
-                ringRadius: 0,
+                state: 'floating',
                 collectionIndex: -1
             }));
         };
 
         // Input
-        // Track Mouse
         const updateMouse = (x, y) => {
             const rect = canvas.getBoundingClientRect();
             mouseX = x - rect.left;
@@ -261,56 +256,63 @@ document.addEventListener('DOMContentLoaded', () => {
         const loop = () => {
             ctx.clearRect(0, 0, width, height);
 
-            // 1. Move Head ('1') towards mouse (High speed)
-            player.head.x += (mouseX - player.head.x) * 0.15;
-            player.head.y += (mouseY - player.head.y) * 0.15;
+            // 1. Head Logic ('1')
+            // Head leads, moves towards mouse
+            player.head.x += (mouseX - player.head.x) * 0.12;
+            player.head.y += (mouseY - player.head.y) * 0.12;
 
-            // 2. Move Body ('0') towards Head (Slower, heavier)
-            // It should trail behind
-            const targetBodyX = player.head.x - 60; // Offset slightly
-            const targetBodyY = player.head.y;
-
-            player.body.x += (player.head.x + 30 - player.body.x) * 0.08;
+            // 2. Body Logic ('0' Ellipse)
+            // Follows Head
+            // But '0' is slower/heavier
+            player.body.x += (player.head.x - player.body.x) * 0.08;
             player.body.y += (player.head.y - player.body.y) * 0.08;
 
+            // 3. Draw Body (Horizontal '0' Ellipse)
+            ctx.beginPath();
+            ctx.ellipse(player.body.x, player.body.y, player.body.width / 2, player.body.height / 2, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff'; // White Fill
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#0f172a'; // Black Stroke (Slate-900)
+            ctx.stroke();
 
-            // 3. Draw Body ('0') - The Container
-            ctx.font = 'bold 120px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#1e293b'; // Slate-800
-            ctx.fillText('0', player.body.x, player.body.y);
-
-            // 4. Update and Draw Orbs
+            // 4. Update & Draw Orbs
             const collectedOrbs = orbs.filter(o => o.state === 'collected');
-            let currentCollectedIndex = 0;
 
             orbs.forEach(orb => {
                 if (orb.state === 'floating') {
-                    // Float logic
-                    orb.x += Math.sin(Date.now() * 0.002 + orb.r) * 0.2;
-                    orb.y += Math.cos(Date.now() * 0.002 + orb.r) * 0.2;
+                    // Flee Logic
+                    const dx = orb.x - player.head.x;
+                    const dy = orb.y - player.head.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
 
-                    // Collision Check with Head ('1')
-                    // Simple box/point check since '1' is text (center ~ x,y)
-                    const dist = Math.hypot(player.head.x - orb.x, player.head.y - orb.y);
-                    if (dist < 40) {
-                        orb.state = 'collected';
-                        // Assign index for slot calculation
-                        orb.collectionIndex = collectedOrbs.length;
+                    if (dist < 200) { // Detection range
+                        // Flee velocity
+                        const force = (200 - dist) * 0.0005; // Gentle push
+                        orb.vx += dx * force;
+                        orb.vy += dy * force;
                     }
 
-                    // Draw Floating Orb
+                    // Friction
+                    orb.vx *= 0.95;
+                    orb.vy *= 0.95;
+
+                    // Boundaries
+                    if (orb.x < 20 || orb.x > width - 20) orb.vx *= -1;
+                    if (orb.y < 20 || orb.y > height - 20) orb.vy *= -1;
+
+                    orb.x += orb.vx;
+                    orb.y += orb.vy;
+
+                    // Eat Check
+                    if (dist < 40) {
+                        orb.state = 'collected';
+                        orb.collectionIndex = collectedOrbs.length;
+                    }
                     drawOrb(orb);
 
                 } else if (orb.state === 'collected') {
-                    // Recalculate collection index based on order
-                    // Actually, we can just keep their initial collection order or re-index
-                    // Let's rely on their persisted collectionIndex if possible, or just re-calc
-                    // Simple: use index in the filtered array
-                    // Update: To avoid jitter, only set index once.  But here we iterate all orbs.
-                    // We'll trust the checked logic above.
-
+                    // Snap to Perimeter
                     const slot = getOrbSlot(orb);
                     const absTargetX = player.body.x + slot.x;
                     const absTargetY = player.body.y + slot.y;
@@ -323,10 +325,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // 5. Draw Head ('1')
+            // "1" sanki yılanın başıymış gibi... ortasından uzasın
             ctx.font = 'bold 60px Inter, sans-serif';
-            ctx.fillStyle = '#3b82f6'; // Primary blue
-            ctx.shadowColor = 'rgba(59, 130, 246, 0.5)';
-            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#3b82f6';
+            ctx.textAlign = 'center'; // Center horizontally on coordinate
+            ctx.textBaseline = 'middle'; // Center vertically
+
+            // To make it look like it's coming out, the head is the '1' itself.
+            // We draw it at head position.
+            ctx.shadowColor = 'rgba(59, 130, 246, 0.4)';
+            ctx.shadowBlur = 15;
             ctx.fillText('1', player.head.x, player.head.y);
             ctx.shadowBlur = 0;
 
@@ -334,47 +342,51 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const getOrbSlot = (orb) => {
-            // Collect around the '0' ring, then inside
-            const idx = orb.collectionIndex;
-            const ring1Cap = 12; // Capacity of outer ring
+            // Position on Ellipse Perimeter
+            // Ellipse parametric eq: x = a cos t, y = b sin t
+            // a = width/2, b = height/2
 
-            if (idx < ring1Cap) {
-                // Outer Ring (Radius 65)
-                const angle = (idx / ring1Cap) * Math.PI * 2 - (Date.now() * 0.0005); // Rotate slowly
+            const idx = orb.collectionIndex;
+            const perimeterCap = 16;
+
+            if (idx < perimeterCap) {
+                // Perimeter
+                // Evenly distribute
+                const angle = (idx / perimeterCap) * Math.PI * 2;
                 return {
-                    x: Math.cos(angle) * 70,
-                    y: Math.sin(angle) * 70
+                    x: (player.body.width / 2 + orb.r) * Math.cos(angle), // +orb.r to sit ON line
+                    y: (player.body.height / 2 + orb.r) * Math.sin(angle)
                 };
             } else {
-                // Inner Ring / Spiral (Radius 35)
-                const innerIdx = idx - ring1Cap;
-                const angle = (innerIdx / 6) * Math.PI * 2 + (Date.now() * 0.001);
+                // Inside (Spiral)
+                const innerIdx = idx - perimeterCap;
+                const angle = innerIdx * 0.8;
+                const radiusScale = 1 - (innerIdx * 0.05);
                 return {
-                    x: Math.cos(angle) * 35,
-                    y: Math.sin(angle) * 35
+                    x: (player.body.width / 4) * radiusScale * Math.cos(angle),
+                    y: (player.body.height / 4) * radiusScale * Math.sin(angle)
                 };
             }
         };
 
         const drawOrb = (orb) => {
-            // Ball
             ctx.beginPath();
             ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
             ctx.fillStyle = orb.color;
             ctx.fill();
 
-            // Glow
-            ctx.shadowColor = orb.color;
-            ctx.shadowBlur = 10;
+            // Simple stroke for definition
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#fff';
             ctx.stroke();
-            ctx.shadowBlur = 0;
 
-            // Text (Only if floating or very specifically needed)
-            // User asked: "altında hangi yetenek olduğu yazsın"
-            ctx.shadowBlur = 0;
-            ctx.font = 'bold 10px Inter, sans-serif';
-            ctx.fillStyle = '#94a3b8'; // Slate-400
-            ctx.fillText(orb.text, orb.x, orb.y + orb.r + 12);
+            // Text
+            if (orb.state === 'floating') {
+                ctx.font = 'bold 11px Inter, sans-serif';
+                ctx.fillStyle = '#94a3b8';
+                ctx.textAlign = 'center';
+                ctx.fillText(orb.text, orb.x, orb.y + orb.r + 14);
+            }
         };
 
         window.addEventListener('resize', init);
