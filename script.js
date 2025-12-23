@@ -199,8 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.text = text;
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.8; // Gentle random speed
-                this.vy = (Math.random() - 0.5) * 0.8;
+                this.vx = (Math.random() - 0.5) * 0.4; // Slower gentle speed
+                this.vy = (Math.random() - 0.5) * 0.4;
                 this.size = 3 + Math.random() * 2;
                 this.color = '#3b82f6'; // Blue-500
             }
@@ -210,29 +210,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (this.x < 0 || this.x > width) this.vx *= -1;
                 if (this.y < 0 || this.y > height) this.vy *= -1;
 
-                // Mouse Interaction (Repel)
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const interactRadius = 200;
+                // Mouse Interaction REMOVED as per user request (Ambient Floating only)
 
-                if (dist < interactRadius) {
-                    const forceDirectionX = dx / dist;
-                    const forceDirectionY = dy / dist;
-                    const force = (interactRadius - dist) / interactRadius;
-                    // Push away
-                    const repelStrength = 0.5; // "Magnetic" feel
-                    this.vx -= forceDirectionX * force * repelStrength;
-                    this.vy -= forceDirectionY * force * repelStrength;
-                }
+                // Friction to return to normal speed (slower stabilization)
+                // this.vx *= 0.99; // Not needed if we don't apply external forces
+                // this.vy *= 0.99;
 
-                // Friction to return to normal speed
-                this.vx *= 0.99;
-                this.vy *= 0.99;
+                // Keep it moving constantly but slowly
+                // Random drift to make it "organic"
+                // this.vx += (Math.random() - 0.5) * 0.02; // very subtle changes
+                // this.vy += (Math.random() - 0.5) * 0.02;
 
-                // Keep it moving slightly always
-                if (Math.abs(this.vx) < 0.1) this.vx += (Math.random() - 0.5) * 0.05;
-                if (Math.abs(this.vy) < 0.1) this.vy += (Math.random() - 0.5) * 0.05;
+                // Just constant floating with bounce is often smoothest for this effect
+                // or very very slight noise? Let's stick to simple bounce + init speed implies drift.
+                // We'll re-init speeds to be lower in constructor if needed, but here we just apply velocity.
 
                 this.x += this.vx;
                 this.y += this.vy;
