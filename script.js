@@ -613,6 +613,41 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBlogContent(blog);
         generateTOC('blog-toc-container', 'blog-report-content');
 
+        // --- Next Blog Logic ---
+        const nextBlogContainer = document.getElementById('next-blog-container');
+        if (nextBlogContainer && allBlogs.length > 1) {
+            const currentIndex = allBlogs.findIndex(b => b.id == id);
+            if (currentIndex !== -1) {
+                const nextIndex = (currentIndex + 1) % allBlogs.length;
+                const nextBlog = allBlogs[nextIndex];
+                
+                const nextTitle = currentBlogLang === 'en' ? (nextBlog.title_en || nextBlog.title) : nextBlog.title;
+                const nextDesc = currentBlogLang === 'en' ? (nextBlog.description_en || nextBlog.description) : nextBlog.description;
+
+                nextBlogContainer.innerHTML = `
+                    <div class="cursor-pointer group" onclick="openBlogReport(${nextBlog.id})">
+                        <div class="text-sm text-slate-500 mb-1 font-medium">Sıradaki Yazı</div>
+                        <div class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-primary/50 hover:bg-slate-50 transition-all duration-300">
+                            <div class="flex items-center gap-4">
+                                <img src="${nextBlog.image}" class="w-16 h-16 object-cover rounded-lg bg-slate-200" alt="${nextTitle}">
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-800 group-hover:text-primary transition-colors">${nextTitle}</h4>
+                                    <p class="text-sm text-slate-500 line-clamp-1">${nextDesc}</p>
+                                </div>
+                            </div>
+                            <svg class="w-6 h-6 text-slate-400 group-hover:text-primary group-hover:translate-x-2 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+            } else {
+                nextBlogContainer.innerHTML = '';
+            }
+        } else if (nextBlogContainer) {
+            nextBlogContainer.innerHTML = '';
+        }
+
         showSection('blog-report', false);
         if (shouldPushState) {
             history.pushState({ section: 'blog-report', id: id }, '', '#blog-' + id);
