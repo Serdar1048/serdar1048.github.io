@@ -978,7 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (level === 3) link.classList.add('ml-4', 'text-xs');
             } else {
                 link.className = 'block text-sm text-slate-600 hover:text-primary transition-colors py-1 border-l-2 border-transparent hover:border-primary pl-3 truncate';
-                if (level === 2) link.classList.add('ml-0', 'font-medium text-slate-800');
+                if (level === 2) link.classList.add('ml-0', 'font-medium', 'text-slate-800');
                 if (level === 3) link.classList.add('ml-4');
             }
 
