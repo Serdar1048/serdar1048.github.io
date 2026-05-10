@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Default
             if (hash === '#portfolio') {
                 showSection('portfolio', false);
-            } else if (hash === '#blog') {
+            } else if (hash === '#blog' || hash === '#blog-list') {
                 showSection('blog', false);
             } else if (hash === '#about') {
                 showSection('about', false);
@@ -416,8 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleInitialRouting = () => {
         const hash = window.location.hash;
 
-        // If it's a deep link (Project/Report), wait for data loading (don't redirect to home)
-        if (hash.startsWith('#project-') || hash.startsWith('#report-')) {
+        // If it's a deep link (Project/Report/Blog), wait for data loading (don't redirect to home)
+        if (hash.startsWith('#project-') || hash.startsWith('#report-') || hash.startsWith('#blog-')) {
             return;
         }
 
