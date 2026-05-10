@@ -47,8 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Show target
-        if (sections[sectionName]) {
-            sections[sectionName].classList.remove('hidden');
+        let target = sections[sectionName];
+        if (!target) target = document.getElementById(sectionName);
+
+        if (target) {
+            target.classList.remove('hidden');
+            window.scrollTo(0, 0);
             // Init graph if about section is shown
             if (sectionName === 'about') {
                 setTimeout(() => initGraph(), 100); // Slight delay for render
@@ -169,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     data-code="${escapedCode}"
                     class="absolute top-3 right-3 p-2 rounded-lg bg-slate-700/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-primary backdrop-blur-sm z-10"
                     title="Kodu Kopyala">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 0 002 2z"></path></svg>
                 </button>
                 <pre class="!mt-0 rounded-xl relative"><code class="hljs ${language}">${highlighted}</code></pre>
             </div>
@@ -581,8 +585,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Blog Report View ---
     window.openBlogReport = (id, shouldPushState = true) => {
-        const blog = allBlogs.find(b => b.id === id);
-        if (!blog) return;
+        console.log("Opening blog report for ID:", id);
+        const blog = allBlogs.find(b => b.id == id);
+        if (!blog) {
+            console.error("Blog not found for ID:", id, "Available blogs:", allBlogs);
+            return;
+        }
 
         currentBlogId = id;
         currentBlogLang = 'tr';
