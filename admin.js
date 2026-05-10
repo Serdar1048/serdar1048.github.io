@@ -158,18 +158,46 @@ window.logout = () => {
 // Load Projects (Renamed from loadProjects)
 async function fetchProjects() {
     try {
-        const pRes = await fetch('projects.json?t=' + new Date().getTime());
-        projectsData = await pRes.json();
-        
-        const bRes = await fetch('blog.json?t=' + new Date().getTime());
-        blogData = await bRes.json();
+        // If we have a token, we should fetch FROM GITHUB API to avoid cache
+        if (GITHUB_TOKEN) {
+            const fetchFromGithub = async (path) => {
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?t=${new Date().getTime()}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    return JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\s/g, '')))));
+                }
+                throw new Error("API Fetch failed");
+            };
+
+            projectsData = await fetchFromGithub('projects.json');
+            blogData = await fetchFromGithub('blog.json');
+        } else {
+            // Fallback to static files
+            const pRes = await fetch('projects.json?t=' + new Date().getTime());
+            projectsData = await pRes.json();
+            
+            const bRes = await fetch('blog.json?t=' + new Date().getTime());
+            blogData = await bRes.json();
+        }
 
         renderAdminList();
         renderAdminBlogList();
         handleRouting(); // Initial routing check after data load
     } catch (error) {
         console.error('Yükleme hatası:', error);
-        // alert('Veriler yüklenemedi. Yerel sunucuyu kontrol edin.');
+        // Fallback to static files if API fails
+        if (GITHUB_TOKEN) {
+             const pRes = await fetch('projects.json?t=' + new Date().getTime());
+             projectsData = await pRes.json();
+             const bRes = await fetch('blog.json?t=' + new Date().getTime());
+             blogData = await bRes.json();
+             renderAdminList();
+             renderAdminBlogList();
+             handleRouting();
+        }
     }
 }
 
@@ -382,8 +410,8 @@ async function pushToGithub(filePath, data) {
 
         let sha = "";
         if (getRes.ok) {
-            const data = await getRes.json();
-            sha = data.sha;
+            const resData = await getRes.json();
+            sha = resData.sha;
         }
 
         const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
@@ -403,7 +431,10 @@ async function pushToGithub(filePath, data) {
 
         if (putRes.ok) {
             showToast('Değişiklikler GitHub\'a başarıyla kaydedildi!', 'success');
-            fetchProjects(); // Refresh data
+            // Instead of fetchProjects() which might get stale data from CDN,
+            // we just re-render with our current local 'blogData'/'projectsData'
+            renderAdminList();
+            renderAdminBlogList();
         } else {
             const err = await putRes.json();
             throw new Error(err.message);
