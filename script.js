@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showSection('about', false);
             } else if (hash === '#contact') {
                 showSection('contact', false);
-            } else {
+            } else if (hash === '' || hash === '#' || hash === '#home') {
                 showSection('home', false);
             }
         }
@@ -415,19 +415,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle Refresh/Direct Link (Check Hash)
     const handleInitialRouting = () => {
         const hash = window.location.hash;
+        console.log("Routing: Initial hash is", hash);
 
-        // If it's a deep link (Project/Report/Blog), wait for data loading (don't redirect to home)
+        // If it's a deep link (Project/Report/Blog Report), wait for data loading (don't redirect to home)
         if (hash.startsWith('#project-') || hash.startsWith('#report-') || hash.startsWith('#blog-')) {
+            console.log("Routing: Deep link detected, waiting for data...");
             return;
         }
 
         const sectionName = hash.slice(1); // Remove '#'
 
         if (sectionName && sections[sectionName]) {
-            showSection(sectionName);
-        } else {
-            // Default to home only if no hash or invalid hash
-            showSection('home');
+            console.log("Routing: Showing section", sectionName);
+            showSection(sectionName, false);
+        } else if (!hash || hash === '#' || hash === '#home') {
+            console.log("Routing: No hash, showing home");
+            showSection('home', false);
         }
     };
 
