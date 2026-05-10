@@ -196,9 +196,9 @@ function renderAdminList() {
 }
 
 // Navigation
-function showProjectList() {
+window.showProjectList = () => {
     window.location.hash = ''; // Clear hash to go to list
-}
+};
 
 function renderViewList() {
     document.getElementById('view-list').classList.remove('hidden');
@@ -207,9 +207,10 @@ function renderViewList() {
     document.getElementById('view-blog-form').classList.add('hidden');
 }
 
-function showBlogList() {
+window.showBlogList = () => {
+    console.log("Navigating to blog list...");
     window.location.hash = '#blog-list';
-}
+};
 
 function renderBlogList() {
     document.getElementById('view-list').classList.add('hidden');
@@ -219,9 +220,9 @@ function renderBlogList() {
     renderAdminBlogList();
 }
 
-function showBlogEditForm() {
+window.showBlogEditForm = () => {
     window.location.hash = '#blog-new';
-}
+};
 
 function renderBlogEditForm() {
     document.getElementById('view-list').classList.add('hidden');
@@ -242,9 +243,9 @@ function renderBlogEditForm() {
     document.getElementById('blog-edit-content-en').value = "";
 }
 
-function showEditForm() {
+window.showEditForm = () => {
     window.location.hash = '#new';
-}
+};
 
 function renderEditForm() {
     document.getElementById('view-list').classList.add('hidden');
