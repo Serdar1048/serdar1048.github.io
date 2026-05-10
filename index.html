@@ -814,8 +814,10 @@
 
         <!-- Blog Report View Section -->
         <section id="blog-report" class="hidden min-h-screen bg-white pt-16 relative">
-            <div id="blog-reading-progress" class="fixed top-0 left-0 h-[3px] bg-primary z-[60] w-0 transition-all duration-150 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+            <!-- Reading Progress Bar -->
+            <div id="blog-reading-progress" class="fixed top-0 left-0 h-[3px] bg-primary z-[60] w-0 transition-all duration-150 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
             
+            <!-- Blog Report Nav -->
             <div class="sticky top-16 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center gap-4 shadow-sm">
                 <button onclick="navigateTo('blog')" class="flex items-center gap-2 text-slate-600 hover:text-primary transition-colors font-medium">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -832,15 +834,26 @@
                 </div>
             </div>
 
-            <div class="max-w-4xl mx-auto px-4 py-8 md:py-12">
-                <div class="prose prose-slate max-w-none prose-img:rounded-xl prose-img:shadow-md">
-                    <div class="mb-10 text-center">
-                        <img id="blog-report-image" src="" class="w-full h-48 md:h-80 object-cover rounded-xl shadow-lg mb-8 bg-slate-100" alt="Blog Cover">
-                        <div id="blog-report-date" class="text-sm font-medium text-slate-500 mb-2"></div>
-                        <h1 id="blog-report-title" class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 break-words"></h1>
+            <div class="max-w-[1400px] mx-auto flex items-start">
+                <!-- Sidebar TOC -->
+                <aside class="hidden lg:block w-72 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto p-6 border-r border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">İçindekiler</h3>
+                    <nav id="blog-toc-container" class="space-y-1">
+                        <!-- JS will inject here -->
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 min-w-0 px-4 py-8 md:px-6 md:py-12 lg:px-12">
+                    <div class="prose prose-slate max-w-4xl mx-auto prose-img:rounded-xl prose-img:shadow-md">
+                        <div class="mb-10 text-center">
+                            <img id="blog-report-image" src="" class="w-full h-48 md:h-80 object-cover rounded-xl shadow-lg mb-8 bg-slate-100" alt="Blog Cover">
+                            <div id="blog-report-date" class="text-sm font-medium text-slate-500 mb-2"></div>
+                            <h1 id="blog-report-title" class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 break-words"></h1>
+                        </div>
+                        <div id="blog-report-content" class="markdown-body prose-headings:scroll-mt-24"></div>
                     </div>
-                    <div id="blog-report-content" class="markdown-body"></div>
-                </div>
+                </main>
             </div>
         </section>
 
@@ -883,7 +896,26 @@
             </svg>
         </button>
 
-        <script src="script.js?v=26"></script>
+    <!-- Custom Modern Modal -->
+    <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="p-6 text-center">
+                <div id="modal-icon-container" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <!-- Icon injected by JS -->
+                </div>
+                <h3 id="modal-title" class="text-xl font-bold text-slate-900 mb-2">Başlık</h3>
+                <p id="modal-message" class="text-slate-600">Mesaj içeriği buraya gelecek.</p>
+            </div>
+            <div id="modal-footer" class="p-4 bg-slate-50 flex gap-3">
+                <!-- Buttons injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[110] space-y-3"></div>
+
+    <script src="script.js?v=26"></script>
 </body>
 
 </html>

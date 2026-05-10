@@ -60,10 +60,10 @@
         <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
             <h1 class="text-xl font-bold text-slate-800">Panel</h1>
             <div class="flex gap-4 items-center">
-                <button onclick="showProjectList()" class="text-slate-600 hover:text-blue-600">Projeler</button>
-                <button onclick="showBlogList()" class="text-slate-600 hover:text-blue-600">Blog</button>
-                <button onclick="openTokenModal()" class="text-slate-600 hover:text-blue-600">Token Güncelle</button>
-                <a href="index.html" class="text-slate-600 hover:text-blue-600">Siteye Dön</a>
+                <button id="nav-projects" onclick="showProjectList()" class="text-slate-600 hover:text-blue-600 px-3 py-1.5 rounded-lg transition-all duration-200">Projeler</button>
+                <button id="nav-blog" onclick="showBlogList()" class="text-slate-600 hover:text-blue-600 px-3 py-1.5 rounded-lg transition-all duration-200">Blog</button>
+                <button onclick="openTokenModal()" class="text-slate-600 hover:text-blue-600 px-3 py-1.5 rounded-lg transition-all duration-200">Token Güncelle</button>
+                <a href="index.html" class="text-slate-600 hover:text-blue-600 px-3 py-1.5 rounded-lg transition-all duration-200">Siteye Dön</a>
                 <button onclick="logout()"
                     class="text-red-500 hover:text-red-700 text-sm border border-red-200 hover:border-red-400 px-3 py-1 rounded-full transition-colors">Çıkış
                     Yap</button>
@@ -339,6 +339,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Custom Modern Modal -->
+    <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="p-6 text-center">
+                <div id="modal-icon-container" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <!-- Icon injected by JS -->
+                </div>
+                <h3 id="modal-title" class="text-xl font-bold text-slate-900 mb-2">Başlık</h3>
+                <p id="modal-message" class="text-slate-600">Mesaj içeriği buraya gelecek.</p>
+            </div>
+            <div id="modal-footer" class="p-4 bg-slate-50 flex gap-3">
+                <!-- Buttons injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[110] space-y-3"></div>
 
     <script src="admin.js?v=4"></script>
 </body>

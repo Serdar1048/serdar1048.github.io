@@ -121,9 +121,9 @@ function saveToken() {
         // If we were in the middle of an action (like a failed push), maybe we should retry or just let the user click save again.
         // For now, refreshing the list is safe.
         fetchProjects();
-        alert('Token güncellendi! Lütfen işleminizi tekrar deneyin.');
+        showToast('Token güncellendi! Lütfen işleminizi tekrar deneyin.', 'success');
     } else {
-        alert('Lütfen geçerli bir token girin.');
+        showAlert('Hata', 'Lütfen geçerli bir token girin.', 'error');
     }
 }
 
@@ -132,7 +132,6 @@ function saveToken() {
 // Open Token Modal Manually
 // Open Token Modal Manually
 window.openTokenModal = () => {
-    // Fetch elements dynamically to catch them even if DOM load was tricky
     const modal = document.getElementById('token-modal');
     const input = document.getElementById('token-input');
 
@@ -140,10 +139,9 @@ window.openTokenModal = () => {
 
     if (modal) {
         modal.classList.remove('hidden');
-        // Force style just in case Tailwind hierarchy is weird
         modal.style.display = 'flex';
     } else {
-        alert("Hata: Token penceresi bulunamadı. Sayfayı yenilemeyi deneyin.");
+        showAlert('Hata', "Token penceresi bulunamadı. Sayfayı yenilemeyi deneyin.", 'error');
     }
 };
 
@@ -151,10 +149,10 @@ window.openTokenModal = () => {
 
 // Logout Function
 window.logout = () => {
-    if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+    showConfirm('Çıkış Yap', 'Hesabınızdan çıkış yapmak istediğinize emin misiniz?', () => {
         localStorage.removeItem('admin_session');
         location.reload();
-    }
+    });
 };
 
 // Load Projects (Renamed from loadProjects)
@@ -278,9 +276,10 @@ window.editProject = (id) => {
 
 // Delete Action
 window.deleteProject = (id) => {
-    if (!confirm('Bu projeyi silmek istediğinize emin misiniz?')) return;
-    projectsData = projectsData.filter(p => p.id !== id);
-    pushToGithub();
+    showConfirm('Projeyi Sil', 'Bu projeyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.', () => {
+        projectsData = projectsData.filter(p => p.id !== id);
+        pushToGithub('projects.json', projectsData);
+    });
 };
 
 // Save Action
@@ -337,9 +336,10 @@ window.editBlog = (id) => {
 };
 
 window.deleteBlog = (id) => {
-    if (!confirm('Bu blog yazısını silmek istediğinize emin misiniz?')) return;
-    blogData = blogData.filter(b => b.id !== id);
-    pushToGithub('blog.json', blogData);
+    showConfirm('Yazıyı Sil', 'Bu blog yazısını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.', () => {
+        blogData = blogData.filter(b => b.id !== id);
+        pushToGithub('blog.json', blogData);
+    });
 };
 
 window.saveBlog = () => {
@@ -402,7 +402,7 @@ async function pushToGithub(filePath, data) {
         });
 
         if (putRes.ok) {
-            alert('Başarıyla GitHub\'a kaydedildi!');
+            showToast('Değişiklikler GitHub\'a başarıyla kaydedildi!', 'success');
             fetchProjects(); // Refresh data
         } else {
             const err = await putRes.json();
@@ -410,7 +410,7 @@ async function pushToGithub(filePath, data) {
         }
     } catch (error) {
         console.error(error);
-        alert('Kaydetme başarısız: ' + error.message);
+        showAlert('Hata', 'Kaydetme başarısız: ' + error.message, 'error');
     }
 }
 
@@ -483,7 +483,7 @@ async function handleFolderUpload(input, targetId = 'edit-details') {
             }
 
             if (statusLabel) statusLabel.textContent = "📁 Klasör Yükle (MD+Resim)";
-            alert(`${replacements.length} adet resim başarıyla MD dosyasına gömüldü!`);
+            showToast(`${replacements.length} adet resim başarıyla MD dosyasına gömüldü!`, 'success');
         }
 
         document.getElementById(targetId).value = mdContent;
@@ -585,7 +585,7 @@ async function uploadImageToGithub(input, targetId) {
 
     } catch (error) {
         console.error("Upload Error:", error);
-        alert("Yükleme başarısız: " + error.message);
+        showAlert("Hata", "Yükleme başarısız: " + error.message, "error");
         if (span) span.textContent = "❌ Hata";
         setTimeout(() => { if (span) span.textContent = originalText; }, 2000);
         input.value = '';
@@ -596,53 +596,193 @@ async function uploadImageToGithub(input, targetId) {
 function handleRouting() {
     const hash = window.location.hash;
 
-    if (hash === '#new') {
-        renderEditForm();
-    } else if (hash.startsWith('#edit?id=')) {
-        const id = parseInt(hash.split('=')[1]);
-        const project = projectsData.find(p => p.id === id);
-
-        if (project) {
-            renderEditForm();
-            document.getElementById('form-title').textContent = "Proje Düzenle";
-            document.getElementById('edit-id').value = project.id;
-            document.getElementById('edit-title').value = project.title;
-            document.getElementById('edit-desc').value = project.description;
-            document.getElementById('edit-image').value = project.image;
-            document.getElementById('edit-github').value = project.github;
-            document.getElementById('edit-demo').value = project.demo_url;
-            document.getElementById('edit-technologies').value = (project.technologies || []).join(', ');
-            document.getElementById('edit-details').value = project.details;
-            document.getElementById('edit-details-en').value = project.details_en || "";
-        } else {
-            window.location.hash = '';
-        }
-    } else if (hash === '#blog-list') {
-        renderBlogList();
-    } else if (hash === '#blog-new') {
-        renderBlogEditForm();
-    } else if (hash.startsWith('#blog-edit?id=')) {
-        const id = parseInt(hash.split('=')[1]);
-        const blog = blogData.find(b => b.id === id);
-
-        if (blog) {
-            renderBlogEditForm();
-            document.getElementById('blog-form-title').textContent = "Yazı Düzenle";
-            document.getElementById('blog-edit-id').value = blog.id;
-            document.getElementById('blog-edit-title').value = blog.title;
-            document.getElementById('blog-edit-title-en').value = blog.title_en || "";
-            document.getElementById('blog-edit-desc').value = blog.description;
-            document.getElementById('blog-edit-desc-en').value = blog.description_en || "";
-            document.getElementById('blog-edit-date').value = blog.date;
-            document.getElementById('blog-edit-image').value = blog.image;
-            document.getElementById('blog-edit-content').value = blog.content;
-            document.getElementById('blog-edit-content-en').value = blog.content_en || "";
-        } else {
-            window.location.hash = '#blog-list';
+    if (hash === '#blog-list' || hash === '#blog-new' || hash.startsWith('#blog-edit')) {
+        updateAdminNav('blog');
+        if (hash === '#blog-list') renderBlogList();
+        else if (hash === '#blog-new') renderBlogEditForm();
+        else {
+            const id = parseInt(hash.split('=')[1]);
+            const blog = blogData.find(b => b.id === id);
+            if (blog) {
+                renderBlogEditForm();
+                document.getElementById('blog-form-title').textContent = "Yazı Düzenle";
+                document.getElementById('blog-edit-id').value = blog.id;
+                document.getElementById('blog-edit-title').value = blog.title;
+                document.getElementById('blog-edit-title-en').value = blog.title_en || "";
+                document.getElementById('blog-edit-desc').value = blog.description;
+                document.getElementById('blog-edit-desc-en').value = blog.description_en || "";
+                document.getElementById('blog-edit-date').value = blog.date;
+                document.getElementById('blog-edit-image').value = blog.image;
+                document.getElementById('blog-edit-content').value = blog.content;
+                document.getElementById('blog-edit-content-en').value = blog.content_en || "";
+            } else {
+                window.location.hash = '#blog-list';
+            }
         }
     } else {
-        renderViewList();
+        updateAdminNav('projects');
+        if (hash === '#new') {
+            renderEditForm();
+        } else if (hash.startsWith('#edit?id=')) {
+            const id = parseInt(hash.split('=')[1]);
+            const project = projectsData.find(p => p.id === id);
+
+            if (project) {
+                renderEditForm();
+                document.getElementById('form-title').textContent = "Proje Düzenle";
+                document.getElementById('edit-id').value = project.id;
+                document.getElementById('edit-title').value = project.title;
+                document.getElementById('edit-desc').value = project.description;
+                document.getElementById('edit-image').value = project.image;
+                document.getElementById('edit-github').value = project.github;
+                document.getElementById('edit-demo').value = project.demo_url;
+                document.getElementById('edit-technologies').value = (project.technologies || []).join(', ');
+                document.getElementById('edit-details').value = project.details;
+                document.getElementById('edit-details-en').value = project.details_en || "";
+            } else {
+                window.location.hash = '';
+            }
+        } else {
+            renderViewList();
+        }
     }
 }
 
+function updateAdminNav(active) {
+    const btnProjects = document.getElementById('nav-projects');
+    const btnBlog = document.getElementById('nav-blog');
+
+    if (!btnProjects || !btnBlog) return;
+
+    // Reset
+    [btnProjects, btnBlog].forEach(btn => {
+        btn.classList.remove('bg-blue-50', 'text-blue-600', 'font-bold', 'ring-1', 'ring-blue-100');
+        btn.classList.add('text-slate-600');
+    });
+
+    // Set Active
+    const activeBtn = active === 'projects' ? btnProjects : btnBlog;
+    activeBtn.classList.remove('text-slate-600');
+    activeBtn.classList.add('bg-blue-50', 'text-blue-600', 'font-bold', 'ring-1', 'ring-blue-100');
+}
+
+
+// --- Modern Popup System Implementation ---
+const modal = {
+    el: document.getElementById('custom-modal'),
+    title: document.getElementById('modal-title'),
+    message: document.getElementById('modal-message'),
+    icon: document.getElementById('modal-icon-container'),
+    footer: document.getElementById('modal-footer'),
+
+    show: function (options) {
+        const { title, message, type, confirmText, cancelText, onConfirm } = options;
+        this.title.innerText = title;
+        this.message.innerText = message;
+
+        // Icon and Color based on type
+        let iconHtml = '';
+        let iconBg = '';
+        if (type === 'success') {
+            iconHtml = '<svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            iconBg = 'bg-green-100';
+        } else if (type === 'error') {
+            iconHtml = '<svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+            iconBg = 'bg-red-100';
+        } else {
+            iconHtml = '<svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            iconBg = 'bg-blue-100';
+        }
+
+        this.icon.innerHTML = iconHtml;
+        this.icon.className = `w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${iconBg}`;
+
+        // Footer Buttons
+        this.footer.innerHTML = '';
+        if (cancelText) {
+            const btnCancel = document.createElement('button');
+            btnCancel.innerText = cancelText;
+            btnCancel.className = "flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition font-medium text-slate-600";
+            btnCancel.onclick = () => this.hide();
+            this.footer.appendChild(btnCancel);
+        }
+
+        const btnConfirm = document.createElement('button');
+        btnConfirm.innerText = confirmText || 'Tamam';
+        btnConfirm.className = `flex-1 px-4 py-2 text-white rounded-lg transition font-bold ${type === 'error' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`;
+        btnConfirm.onclick = () => {
+            if (onConfirm) onConfirm();
+            this.hide();
+        };
+        this.footer.appendChild(btnConfirm);
+
+        this.el.classList.remove('hidden');
+        this.el.classList.add('flex');
+        setTimeout(() => {
+            this.el.classList.remove('opacity-0');
+            this.el.querySelector('div').classList.remove('scale-95');
+        }, 10);
+    },
+
+    hide: function () {
+        this.el.classList.add('opacity-0');
+        this.el.querySelector('div').classList.add('scale-95');
+        setTimeout(() => {
+            this.el.classList.add('hidden');
+            this.el.classList.remove('flex');
+        }, 300);
+    }
+};
+
+window.showAlert = (title, message, type = 'info') => {
+    modal.show({ title, message, type });
+};
+
+window.showConfirm = (title, message, onConfirm) => {
+    modal.show({
+        title,
+        message,
+        type: 'info',
+        confirmText: 'Evet, Eminim',
+        cancelText: 'İptal',
+        onConfirm
+    });
+};
+
+window.showToast = (message, type = 'success') => {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `p-4 rounded-xl shadow-lg border border-slate-200 bg-white flex items-center gap-3 transform translate-y-4 opacity-0 transition-all duration-300 max-w-xs`;
+
+    const colors = {
+        success: 'text-green-500',
+        error: 'text-red-500',
+        info: 'text-blue-500'
+    };
+
+    const icons = {
+        success: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>',
+        error: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        info: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+    };
+
+    toast.innerHTML = `
+        <div class="${colors[type]} p-2 rounded-lg bg-slate-50">
+            ${icons[type]}
+        </div>
+        <div class="text-sm font-semibold text-slate-700">${message}</div>
+    `;
+
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+};
+
 window.addEventListener('hashchange', handleRouting);
+

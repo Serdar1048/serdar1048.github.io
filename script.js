@@ -603,6 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         renderBlogContent(blog);
+        generateTOC('blog-toc-container', 'blog-report-content');
 
         showSection('blog-report', false);
         if (shouldPushState) {
@@ -944,25 +945,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    function generateTOC() {
-        const desktopContainer = document.getElementById('toc-container');
-        const mobileContainer = document.getElementById('mobile-toc-container');
+    function generateTOC(containerId = 'toc-container', contentId = 'report-content') {
+        const desktopContainer = document.getElementById(containerId);
+        const mobileContainer = document.getElementById('mobile-toc-container'); 
+        const sourceContent = document.getElementById(contentId);
+
+        if (!desktopContainer || !sourceContent) return;
 
         desktopContainer.innerHTML = '';
-        if (mobileContainer) mobileContainer.innerHTML = '';
+        if (containerId === 'toc-container' && mobileContainer) mobileContainer.innerHTML = '';
 
-        const headers = reportContent.querySelectorAll('h1, h2, h3');
+        const headers = sourceContent.querySelectorAll('h1, h2, h3');
 
         if (headers.length === 0) {
-            desktopContainer.innerHTML = '<p class="text-xs text-slate-400">Bu raporda başlık bulunamadı.</p>';
-            if (mobileContainer) mobileContainer.innerHTML = '<p class="text-xs text-slate-400">Başlık bulunamadı.</p>';
+            desktopContainer.innerHTML = '<p class="text-xs text-slate-400">Bu bölümde başlık bulunamadı.</p>';
             return;
         }
 
         const createLink = (header, isMobile) => {
-            // Assign ID if missing
             if (!header.id) {
-                // Use random ID to avoid conflicts if same text
                 header.id = 'heading-' + Math.random().toString(36).substr(2, 9);
             }
 
@@ -973,30 +974,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const level = parseInt(header.tagName.substring(1));
 
             if (isMobile) {
-                // Mobile Styling
                 link.className = 'block text-sm text-slate-600 hover:text-primary transition-colors py-2 border-b border-slate-100 last:border-0 pl-2 truncate';
                 if (level === 3) link.classList.add('ml-4', 'text-xs');
             } else {
-                // Desktop Styling
                 link.className = 'block text-sm text-slate-600 hover:text-primary transition-colors py-1 border-l-2 border-transparent hover:border-primary pl-3 truncate';
-                if (level === 2) link.classList.add('ml-0', 'font-medium');
+                if (level === 2) link.classList.add('ml-0', 'font-medium text-slate-800');
                 if (level === 3) link.classList.add('ml-4');
             }
 
             link.onclick = (e) => {
                 e.preventDefault();
                 header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // If mobile, close menu after click
                 if (isMobile) window.toggleMobileTOC();
             };
             return link;
         };
 
         headers.forEach((header) => {
-            // Desktop
             desktopContainer.appendChild(createLink(header, false));
-            // Mobile
-            if (mobileContainer) mobileContainer.appendChild(createLink(header, true));
+            if (containerId === 'toc-container' && mobileContainer) {
+                mobileContainer.appendChild(createLink(header, true));
+            }
         });
     }
 
@@ -1289,3 +1287,120 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
+// --- Modern Popup System Implementation ---
+const modal = {
+    el: document.getElementById('custom-modal'),
+    title: document.getElementById('modal-title'),
+    message: document.getElementById('modal-message'),
+    icon: document.getElementById('modal-icon-container'),
+    footer: document.getElementById('modal-footer'),
+
+    show: function (options) {
+        const { title, message, type, confirmText, cancelText, onConfirm } = options;
+        this.title.innerText = title;
+        this.message.innerText = message;
+
+        // Icon and Color based on type
+        let iconHtml = '';
+        let iconBg = '';
+        if (type === 'success') {
+            iconHtml = '<svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            iconBg = 'bg-green-100';
+        } else if (type === 'error') {
+            iconHtml = '<svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+            iconBg = 'bg-red-100';
+        } else {
+            iconHtml = '<svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            iconBg = 'bg-blue-100';
+        }
+
+        this.icon.innerHTML = iconHtml;
+        this.icon.className = `w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${iconBg}`;
+
+        // Footer Buttons
+        this.footer.innerHTML = '';
+        if (cancelText) {
+            const btnCancel = document.createElement('button');
+            btnCancel.innerText = cancelText;
+            btnCancel.className = "flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition font-medium text-slate-600";
+            btnCancel.onclick = () => this.hide();
+            this.footer.appendChild(btnCancel);
+        }
+
+        const btnConfirm = document.createElement('button');
+        btnConfirm.innerText = confirmText || 'Tamam';
+        btnConfirm.className = `flex-1 px-4 py-2 text-white rounded-lg transition font-bold ${type === 'error' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`;
+        btnConfirm.onclick = () => {
+            if (onConfirm) onConfirm();
+            this.hide();
+        };
+        this.footer.appendChild(btnConfirm);
+
+        this.el.classList.remove('hidden');
+        this.el.classList.add('flex');
+        setTimeout(() => {
+            this.el.classList.remove('opacity-0');
+            this.el.querySelector('div').classList.remove('scale-95');
+        }, 10);
+    },
+
+    hide: function () {
+        this.el.classList.add('opacity-0');
+        this.el.querySelector('div').classList.add('scale-95');
+        setTimeout(() => {
+            this.el.classList.add('hidden');
+            this.el.classList.remove('flex');
+        }, 300);
+    }
+};
+
+window.showAlert = (title, message, type = 'info') => {
+    modal.show({ title, message, type });
+};
+
+window.showConfirm = (title, message, onConfirm) => {
+    modal.show({
+        title,
+        message,
+        type: 'info',
+        confirmText: 'Evet, Eminim',
+        cancelText: 'İptal',
+        onConfirm
+    });
+};
+
+window.showToast = (message, type = 'success') => {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `p-4 rounded-xl shadow-lg border border-slate-200 bg-white flex items-center gap-3 transform translate-y-4 opacity-0 transition-all duration-300 max-w-xs`;
+
+    const colors = {
+        success: 'text-green-500',
+        error: 'text-red-500',
+        info: 'text-blue-500'
+    };
+
+    const icons = {
+        success: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>',
+        error: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        info: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+    };
+
+    toast.innerHTML = `
+        <div class="${colors[type]} p-2 rounded-lg bg-slate-50">
+            ${icons[type]}
+        </div>
+        <div class="text-sm font-semibold text-slate-700">${message}</div>
+    `;
+
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+};
