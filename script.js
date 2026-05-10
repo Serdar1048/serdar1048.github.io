@@ -999,24 +999,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Reading Progress Bar Logic ---
-    const progressBar = document.getElementById('reading-progress-bar');
+    const projectProgressBar = document.getElementById('reading-progress-bar');
+    const blogProgressBar = document.getElementById('blog-reading-progress');
 
     window.addEventListener('scroll', () => {
-        // Only active if report section is visible
-        if (!sections.report || sections.report.classList.contains('hidden')) return;
-
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
         const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrollPercentage = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
 
-        if (scrollHeight <= 0) {
-            progressBar.style.width = '0%';
-            return;
+        // Project Progress
+        if (sections.report && !sections.report.classList.contains('hidden') && projectProgressBar) {
+            projectProgressBar.style.width = `${scrollPercentage}%`;
         }
 
-        const scrollPercentage = (scrollTop / scrollHeight) * 100;
-        progressBar.style.width = `${scrollPercentage}%`;
-        progressBar.style.width = `${scrollPercentage}%`;
+        // Blog Progress
+        if (sections['blog-report'] && !sections['blog-report'].classList.contains('hidden') && blogProgressBar) {
+            blogProgressBar.style.width = `${scrollPercentage}%`;
+        }
+
+        // Active TOC Highlighting (Generic)
+        updateActiveTOC();
     });
+
+    function updateActiveTOC() {
+        let activeSection = null;
+        let contentId = '';
+        let containerId = '';
+
+        if (!sections.report.classList.contains('hidden')) {
+            activeSection = 'report';
+            contentId = 'report-content';
+            containerId = 'toc-container';
+        } else if (!sections['blog-report'].classList.contains('hidden')) {
+            activeSection = 'blog-report';
+            contentId = 'blog-report-content';
+            containerId = 'blog-toc-container';
+        }
+
+        if (!activeSection) return;
+
+        const content = document.getElementById(contentId);
+        if (!content) return;
+        const headers = content.querySelectorAll('h1, h2, h3');
+        const tocLinks = document.querySelectorAll(`#${containerId} a`);
+
+        let currentId = '';
+        headers.forEach(header => {
+            const top = header.getBoundingClientRect().top;
+            if (top < 150) currentId = header.id;
+        });
+
+        tocLinks.forEach(link => {
+            link.classList.remove('text-primary', 'border-primary', 'font-bold', 'bg-slate-50');
+            link.classList.add('border-transparent');
+            if (link.getAttribute('href') === '#' + currentId) {
+                link.classList.add('text-primary', 'border-primary', 'font-bold', 'bg-slate-50');
+                link.classList.remove('border-transparent');
+            }
+        });
+    }
 
     // --- Email Validation Logic ---
     const emailInput = document.getElementById('email');

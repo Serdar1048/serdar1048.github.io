@@ -857,35 +857,24 @@
             </div>
         </section>
 
-                        <div id="mobile-toc-drawer"
-                            class="fixed inset-y-0 left-0 w-64 bg-white z-[120] transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden shadow-2xl flex flex-col">
-                            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                                <h3 class="font-bold text-slate-800">İçindekiler</h3>
-                                <button onclick="toggleMobileTOC()"
-                                    class="text-slate-500 hover:text-red-500 transition-colors">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <nav id="mobile-toc-container" class="p-4 overflow-y-auto flex-1 space-y-1">
-                                <!-- JS will inject here -->
-                            </nav>
-                        </div>
-
-                        <div id="report-content"
-                            class="overflow-hidden prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-headings:break-words prose-a:break-all">
-                        </div>
-
-                        <!-- Next Project Navigation -->
-                        <div id="next-project-container" class="mt-16 pt-8 border-t border-slate-100">
-                            <!-- Injected by JS -->
-                        </div>
-                    </div>
-                </main>
+        <!-- Mobile TOC Drawer -->
+        <div id="mobile-toc-drawer"
+            class="fixed inset-y-0 left-0 w-64 bg-white z-[120] transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden shadow-2xl flex flex-col">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800">İçindekiler</h3>
+                <button onclick="toggleMobileTOC()"
+                    class="text-slate-500 hover:text-red-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
-        </section>
+            <nav id="mobile-toc-container" class="p-4 overflow-y-auto flex-1 space-y-1">
+                <!-- JS will inject here -->
+            </nav>
+        </div>
+        <div id="mobile-toc-overlay" onclick="toggleMobileTOC()" class="fixed inset-0 bg-black/50 z-[110] hidden opacity-0 transition-opacity duration-300"></div>
 
         <!-- Back to Top Button -->
         <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
