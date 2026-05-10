@@ -17,6 +17,7 @@ const editForm = document.getElementById('view-form'); // Assuming 'view-form' m
 
 // State
 let projectsData = [];
+let blogData = [];
 let isEditing = false; // false = create mode, true = edit mode
 let editingId = null;
 
@@ -159,13 +160,18 @@ window.logout = () => {
 // Load Projects (Renamed from loadProjects)
 async function fetchProjects() {
     try {
-        const response = await fetch('projects.json?t=' + new Date().getTime());
-        projectsData = await response.json();
+        const pRes = await fetch('projects.json?t=' + new Date().getTime());
+        projectsData = await pRes.json();
+        
+        const bRes = await fetch('blog.json?t=' + new Date().getTime());
+        blogData = await bRes.json();
+
         renderAdminList();
+        renderAdminBlogList();
         handleRouting(); // Initial routing check after data load
     } catch (error) {
         console.error('Yükleme hatası:', error);
-        alert('Projeler yüklenemedi. Yerel sunucuyu kontrol edin.');
+        // alert('Veriler yüklenemedi. Yerel sunucuyu kontrol edin.');
     }
 }
 
@@ -197,6 +203,43 @@ function showProjectList() {
 function renderViewList() {
     document.getElementById('view-list').classList.remove('hidden');
     document.getElementById('view-form').classList.add('hidden');
+    document.getElementById('view-blog-list').classList.add('hidden');
+    document.getElementById('view-blog-form').classList.add('hidden');
+}
+
+function showBlogList() {
+    window.location.hash = '#blog-list';
+}
+
+function renderBlogList() {
+    document.getElementById('view-list').classList.add('hidden');
+    document.getElementById('view-form').classList.add('hidden');
+    document.getElementById('view-blog-list').classList.remove('hidden');
+    document.getElementById('view-blog-form').classList.add('hidden');
+    renderAdminBlogList();
+}
+
+function showBlogEditForm() {
+    window.location.hash = '#blog-new';
+}
+
+function renderBlogEditForm() {
+    document.getElementById('view-list').classList.add('hidden');
+    document.getElementById('view-form').classList.add('hidden');
+    document.getElementById('view-blog-list').classList.add('hidden');
+    document.getElementById('view-blog-form').classList.remove('hidden');
+
+    // Clear form
+    document.getElementById('blog-form-title').textContent = "Yeni Blog Yazısı";
+    document.getElementById('blog-edit-id').value = "";
+    document.getElementById('blog-edit-title').value = "";
+    document.getElementById('blog-edit-title-en').value = "";
+    document.getElementById('blog-edit-desc').value = "";
+    document.getElementById('blog-edit-desc-en').value = "";
+    document.getElementById('blog-edit-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('blog-edit-image').value = "";
+    document.getElementById('blog-edit-content').value = "";
+    document.getElementById('blog-edit-content-en').value = "";
 }
 
 function showEditForm() {
@@ -206,6 +249,8 @@ function showEditForm() {
 function renderEditForm() {
     document.getElementById('view-list').classList.add('hidden');
     document.getElementById('view-form').classList.remove('hidden');
+    document.getElementById('view-blog-list').classList.add('hidden');
+    document.getElementById('view-blog-form').classList.add('hidden');
 
     // Clear form for new entry
     document.getElementById('form-title').textContent = "Yeni Proje Ekle";
@@ -261,22 +306,75 @@ window.saveProject = () => {
         projectsData.push(newProject);
     }
 
-    pushToGithub();
+    pushToGithub('projects.json', projectsData);
     window.location.hash = ''; // Go back to list
 };
 
-// GitHub API Push
-async function pushToGithub() {
+// --- Blog Specific Actions ---
+function renderAdminBlogList() {
+    const list = document.getElementById('admin-blog-grid');
+    if (!list) return;
+    list.innerHTML = blogData.map(b => `
+        <div class="bg-white p-4 rounded-lg border border-slate-200 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-4">
+                <img src="${b.image}" class="w-12 h-12 rounded object-cover bg-slate-100">
+                <div>
+                    <h3 class="font-bold text-slate-800">${b.title}</h3>
+                    <p class="text-xs text-slate-500">${b.date} | ID: ${b.id}</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="editBlog(${b.id})" class="text-blue-600 hover:bg-blue-50 px-3 py-1 rounded">Düzenle</button>
+                <button onclick="deleteBlog(${b.id})" class="text-red-600 hover:bg-red-50 px-3 py-1 rounded">Sil</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.editBlog = (id) => {
+    window.location.hash = '#blog-edit?id=' + id;
+};
+
+window.deleteBlog = (id) => {
+    if (!confirm('Bu blog yazısını silmek istediğinize emin misiniz?')) return;
+    blogData = blogData.filter(b => b.id !== id);
+    pushToGithub('blog.json', blogData);
+};
+
+window.saveBlog = () => {
+    const id = document.getElementById('blog-edit-id').value;
+    const newBlog = {
+        id: id ? parseInt(id) : (Math.max(...blogData.map(b => b.id), 0) + 1),
+        title: document.getElementById('blog-edit-title').value,
+        title_en: document.getElementById('blog-edit-title-en').value,
+        description: document.getElementById('blog-edit-desc').value,
+        description_en: document.getElementById('blog-edit-desc-en').value,
+        date: document.getElementById('blog-edit-date').value,
+        image: document.getElementById('blog-edit-image').value,
+        content: document.getElementById('blog-edit-content').value,
+        content_en: document.getElementById('blog-edit-content-en').value
+    };
+
+    if (id) {
+        const index = blogData.findIndex(b => b.id == id);
+        if (index !== -1) blogData[index] = newBlog;
+    } else {
+        blogData.push(newBlog);
+    }
+
+    pushToGithub('blog.json', blogData);
+    window.location.hash = '#blog-list';
+};
+
+// GitHub API Push (Generic)
+async function pushToGithub(filePath, data) {
     if (!GITHUB_TOKEN) {
-        alert("GitHub Token eksik! Lütfen 'Token Gir' butonunu kullanın.\n(Şimdilik sadece yerel bellekte güncellendi, sayfa yenilenince kaybolur.)");
-        renderAdminList();
-        window.location.hash = ''; // List
+        alert("GitHub Token eksik! Lütfen 'Token Gir' butonunu kullanın.");
         return;
     }
 
     try {
-        // 1. Get current SHA of the file
-        const fileUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+        const fileUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
         const getRes = await fetch(fileUrl, {
             headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
         });
@@ -287,8 +385,7 @@ async function pushToGithub() {
             sha = data.sha;
         }
 
-        // 2. Update file
-        const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(projectsData, null, 2)))); // Handle UTF-8
+        const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
 
         const putRes = await fetch(fileUrl, {
             method: 'PUT',
@@ -297,41 +394,22 @@ async function pushToGithub() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                message: 'Admin panelinden proje güncellemesi',
+                message: `Update ${filePath} via Admin Panel`,
                 content: contentEncoded,
                 sha: sha
             })
         });
 
         if (putRes.ok) {
-            alert('Başarıyla GitHub\'a kaydedildi! Değişikliklerin siteye yansıması 1-2 dakika sürebilir.');
-            renderAdminList();
-            window.location.hash = ''; // List
+            alert('Başarıyla GitHub\'a kaydedildi!');
+            fetchProjects(); // Refresh data
         } else {
             const err = await putRes.json();
             throw new Error(err.message);
         }
-
     } catch (error) {
         console.error(error);
-        let msg = 'Kaydetme başarısız: ' + error.message;
-
-        if (error.message.includes('404') || error.message.includes('Not Found')) {
-            msg += '\n\nOlası Sebep: Repo adı ("' + REPO_NAME + '") bulunamadı veya Token yetkisi yetersiz.';
-        } else if (error.message.includes('401') || error.message.includes('Bad credentials')) {
-            msg += '\n\nOlası Sebep: GitHub Token geçersiz veya süresi dolmuş.';
-
-            // Auto-recovery: Clear invalid token and show modal
-            alert("GitHub Token süresi dolmuş! Lütfen yeni tokenı giriniz.");
-            localStorage.removeItem('github_token');
-            GITHUB_TOKEN = "";
-            openTokenModal();
-            return; // Stop further UI updates to keep the modal focused
-        }
-
-        alert(msg);
-        renderAdminList(); // Update UI locally anyway
-        window.location.hash = ''; // List
+        alert('Kaydetme başarısız: ' + error.message);
     }
 }
 
@@ -519,17 +597,6 @@ function handleRouting() {
 
     if (hash === '#new') {
         renderEditForm();
-        // Clear form
-        document.getElementById('form-title').textContent = "Yeni Proje Ekle";
-        document.getElementById('edit-id').value = "";
-        document.getElementById('edit-title').value = "";
-        document.getElementById('edit-desc').value = "";
-        document.getElementById('edit-image').value = "";
-        document.getElementById('edit-github').value = "";
-        document.getElementById('edit-demo').value = "";
-        document.getElementById('edit-technologies').value = "";
-        document.getElementById('edit-details').value = "";
-        document.getElementById('edit-details-en').value = "";
     } else if (hash.startsWith('#edit?id=')) {
         const id = parseInt(hash.split('=')[1]);
         const project = projectsData.find(p => p.id === id);
@@ -547,12 +614,32 @@ function handleRouting() {
             document.getElementById('edit-details').value = project.details;
             document.getElementById('edit-details-en').value = project.details_en || "";
         } else {
-            // ID not found, go back to list
             window.location.hash = '';
-            renderViewList();
+        }
+    } else if (hash === '#blog-list') {
+        renderBlogList();
+    } else if (hash === '#blog-new') {
+        renderBlogEditForm();
+    } else if (hash.startsWith('#blog-edit?id=')) {
+        const id = parseInt(hash.split('=')[1]);
+        const blog = blogData.find(b => b.id === id);
+
+        if (blog) {
+            renderBlogEditForm();
+            document.getElementById('blog-form-title').textContent = "Yazı Düzenle";
+            document.getElementById('blog-edit-id').value = blog.id;
+            document.getElementById('blog-edit-title').value = blog.title;
+            document.getElementById('blog-edit-title-en').value = blog.title_en || "";
+            document.getElementById('blog-edit-desc').value = blog.description;
+            document.getElementById('blog-edit-desc-en').value = blog.description_en || "";
+            document.getElementById('blog-edit-date').value = blog.date;
+            document.getElementById('blog-edit-image').value = blog.image;
+            document.getElementById('blog-edit-content').value = blog.content;
+            document.getElementById('blog-edit-content-en').value = blog.content_en || "";
+        } else {
+            window.location.hash = '#blog-list';
         }
     } else {
-        // Default to list (Empty hash or #list)
         renderViewList();
     }
 }

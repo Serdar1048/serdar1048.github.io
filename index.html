@@ -85,6 +85,8 @@
                         Sayfa</button>
                     <button onclick="navigateTo('portfolio')"
                         class="nav-link text-slate-600 hover:text-primary transition-colors font-medium">Projeler</button>
+                    <button onclick="navigateTo('blog')"
+                        class="nav-link text-slate-600 hover:text-primary transition-colors font-medium">Blog</button>
                     <button onclick="navigateTo('contact')"
                         class="nav-link text-slate-600 hover:text-primary transition-colors font-medium">İletişim</button>
 
@@ -141,6 +143,8 @@
                     Sayfa</button>
                 <button onclick="navigateTo('portfolio')"
                     class="text-xl font-medium text-slate-800 hover:text-primary w-full text-center py-2">Projeler</button>
+                <button onclick="navigateTo('blog')"
+                    class="text-xl font-medium text-slate-800 hover:text-primary w-full text-center py-2">Blog</button>
                 <button onclick="navigateTo('about')"
                     class="text-xl font-medium text-slate-800 hover:text-primary w-full text-center py-2">Hakkımda</button>
                 <button onclick="navigateTo('contact')"
@@ -621,7 +625,22 @@
             </div>
         </section>
 
+        <!-- Blog Section -->
+        <section id="blog" class="hidden py-20 bg-slate-50 min-h-screen">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-slate-900 mb-4">Blog</h2>
+                    <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                        Veri bilimi, teknoloji ve kariyer üzerine paylaşımlarım.
+                    </p>
+                </div>
 
+                <!-- Blog Grid -->
+                <div id="blog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Blog posts will be injected here -->
+                </div>
+            </div>
+        </section>
 
         <!-- Simulation / Detail Section -->
         <section id="project-detail" class="hidden min-h-screen bg-slate-50 pt-16">
@@ -782,23 +801,49 @@
                         </div>
 
                         <!-- Content -->
-                        <!-- Content -->
-                        <!-- Mobile TOC Button (Floating) - Moved to LEFT to avoid Back-to-Top overlap -->
-                        <div class="lg:hidden fixed bottom-6 left-6 z-[100]">
-                            <button onclick="toggleMobileTOC()"
-                                class="bg-primary text-white p-3 rounded-full shadow-lg shadow-blue-500/40 hover:bg-blue-600 transition-colors flex items-center gap-2">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 6h16M4 12h16m-7 6h7"></path>
-                                </svg>
-                                <span class="font-medium text-sm">İçindekiler</span>
-                            </button>
-                        </div>
+                        <div id="report-content" class="markdown-body mt-8"></div>
 
-                        <!-- Mobile TOC Drawer (Slide-out) -->
-                        <div id="mobile-toc-overlay" onclick="toggleMobileTOC()"
-                            class="fixed inset-0 bg-black/50 z-[110] hidden transition-opacity opacity-0 lg:hidden backdrop-blur-sm">
+                        <!-- Next Project -->
+                        <div id="next-project-container" class="mt-16 pt-8 border-t border-slate-100">
+                            <!-- Injected by JS -->
                         </div>
+                    </div>
+                </main>
+            </div>
+        </section>
+
+        <!-- Blog Report View Section -->
+        <section id="blog-report" class="hidden min-h-screen bg-white pt-16 relative">
+            <div id="blog-reading-progress" class="fixed top-0 left-0 h-[3px] bg-primary z-[60] w-0 transition-all duration-150 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+            
+            <div class="sticky top-16 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center gap-4 shadow-sm">
+                <button onclick="navigateTo('blog')" class="flex items-center gap-2 text-slate-600 hover:text-primary transition-colors font-medium">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Blog'a Dön
+                </button>
+                <div class="h-6 w-px bg-slate-300 hidden md:block"></div>
+                <h2 id="blog-report-title-top" class="text-lg font-bold text-slate-800 truncate max-w-md hidden md:block">Blog Yazısı</h2>
+                <div class="ml-auto flex items-center gap-3">
+                    <button id="blog-btn-lang-toggle" onclick="toggleBlogLanguage()" class="px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-100/50 border border-slate-200 rounded-lg hover:border-primary hover:text-primary transition-all flex items-center gap-1.5">
+                        <span id="blog-lang-flag">🇺🇸</span> <span id="blog-lang-text">English</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="max-w-4xl mx-auto px-4 py-8 md:py-12">
+                <div class="prose prose-slate max-w-none prose-img:rounded-xl prose-img:shadow-md">
+                    <div class="mb-10 text-center">
+                        <img id="blog-report-image" src="" class="w-full h-48 md:h-80 object-cover rounded-xl shadow-lg mb-8 bg-slate-100" alt="Blog Cover">
+                        <div id="blog-report-date" class="text-sm font-medium text-slate-500 mb-2"></div>
+                        <h1 id="blog-report-title" class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 break-words"></h1>
+                    </div>
+                    <div id="blog-report-content" class="markdown-body"></div>
+                </div>
+            </div>
+        </section>
+
                         <div id="mobile-toc-drawer"
                             class="fixed inset-y-0 left-0 w-64 bg-white z-[120] transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden shadow-2xl flex flex-col">
                             <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">

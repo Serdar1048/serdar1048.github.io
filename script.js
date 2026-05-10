@@ -31,7 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
         about: document.getElementById('about'),
         contact: document.getElementById('contact'),
         detail: document.getElementById('project-detail'),
-        report: document.getElementById('project-report')
+        report: document.getElementById('project-report'),
+        blog: document.getElementById('blog'),
+        'blog-report': document.getElementById('blog-report')
     };
 
     window.showSection = (sectionName, updateHash = true) => {
@@ -103,11 +105,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     openReport(id, false);
                     return;
                 }
+            } else if (hash.startsWith('#blog-')) {
+                const id = parseInt(hash.replace('#blog-', ''));
+                if (!isNaN(id)) {
+                    openBlogReport(id, false);
+                    return;
+                }
             }
 
             // Default
             if (hash === '#portfolio') {
                 showSection('portfolio', false);
+            } else if (hash === '#blog') {
+                showSection('blog', false);
             } else if (hash === '#about') {
                 showSection('about', false);
             } else if (hash === '#contact') {
@@ -137,6 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Data Loading ---
     let allProjects = [];
+    let allBlogs = [];
+    let currentBlogId = null;
+    let currentBlogLang = 'tr';
 
     // --- Specific Section Logic ---
     // --- Specific Section Logic ---
@@ -434,6 +447,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (grid) grid.innerHTML = '<p class="col-span-3 text-center text-red-500">Hata: Projeler yüklenemedi.</p>';
         });
 
+    // Load Blog Data
+    fetch(`blog.json?v=${new Date().getTime()}`)
+        .then(response => response.json())
+        .then(blogs => {
+            allBlogs = blogs;
+            renderBlogs(blogs);
+            handleDataDependentRouting(); // Re-run to handle blog links
+        })
+        .catch(error => {
+            console.error('Blog Loading Error:', error);
+        });
+
     // --- Filtering & Recommender Logic ---
     window.filterProjects = (category) => {
         let filtered = [];
@@ -521,6 +546,101 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     }
 
+    // --- Blog Rendering ---
+    function renderBlogs(blogs) {
+        const blogGrid = document.getElementById('blog-grid');
+        if (!blogGrid) return;
+
+        if (blogs.length === 0) {
+            blogGrid.innerHTML = '<p class="col-span-3 text-center text-slate-500">Henüz blog yazısı eklenmemiş.</p>';
+            return;
+        }
+
+        blogGrid.innerHTML = blogs.map((blog, index) => `
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-100 overflow-hidden group cursor-pointer animate-fade-in-up" 
+                 style="animation-delay: ${index * 100}ms"
+                 onclick="openBlogReport(${blog.id})">
+                <div class="h-48 overflow-hidden bg-slate-200 relative">
+                    <img src="${blog.image}" alt="${blog.title}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
+                </div>
+                <div class="p-6">
+                    <div class="text-xs font-bold text-primary uppercase tracking-wider mb-2">${blog.date}</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">${blog.title}</h3>
+                    <p class="text-slate-600 line-clamp-2">${blog.description}</p>
+                    <div class="mt-4 flex items-center text-sm font-medium text-primary">
+                        Okumaya Devam Et
+                        <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // --- Blog Report View ---
+    window.openBlogReport = (id, shouldPushState = true) => {
+        const blog = allBlogs.find(b => b.id === id);
+        if (!blog) return;
+
+        currentBlogId = id;
+        currentBlogLang = 'tr';
+
+        // UI Updates
+        document.getElementById('blog-report-title-top').textContent = blog.title;
+        document.getElementById('blog-report-title').textContent = blog.title;
+        document.getElementById('blog-report-date').textContent = blog.date;
+        document.getElementById('blog-report-image').src = blog.image;
+        
+        const btnToggle = document.getElementById('blog-btn-lang-toggle');
+        if (blog.content_en && blog.content_en.trim() !== "") {
+            btnToggle.classList.remove('hidden');
+            document.getElementById('blog-lang-flag').textContent = '🇺🇸';
+            document.getElementById('blog-lang-text').textContent = 'English';
+        } else {
+            btnToggle.classList.add('hidden');
+        }
+
+        renderBlogContent(blog);
+
+        showSection('blog-report', false);
+        if (shouldPushState) {
+            history.pushState({ section: 'blog-report', id: id }, '', '#blog-' + id);
+        }
+    };
+
+    function renderBlogContent(blog) {
+        const container = document.getElementById('blog-report-content');
+        const content = currentBlogLang === 'en' ? blog.content_en : blog.content;
+        const finalContent = content || blog.content;
+
+        container.innerHTML = marked.parse(finalContent, { breaks: true });
+        
+        // Update titles if English
+        if (currentBlogLang === 'en') {
+            document.getElementById('blog-report-title').textContent = blog.title_en || blog.title;
+        } else {
+            document.getElementById('blog-report-title').textContent = blog.title;
+        }
+
+        window.scrollTo(0, 0);
+    }
+
+    window.toggleBlogLanguage = () => {
+        const blog = allBlogs.find(b => b.id === currentBlogId);
+        if (!blog) return;
+
+        if (currentBlogLang === 'tr') {
+            currentBlogLang = 'en';
+            document.getElementById('blog-lang-flag').textContent = '🇹🇷';
+            document.getElementById('blog-lang-text').textContent = 'Türkçe';
+        } else {
+            currentBlogLang = 'tr';
+            document.getElementById('blog-lang-flag').textContent = '🇺🇸';
+            document.getElementById('blog-lang-text').textContent = 'English';
+        }
+
+        renderBlogContent(blog);
+    };
+
     // --- Routing Handlers ---
 
     /* Legacy handleStaticRouting removed */
@@ -540,6 +660,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 openReport(id, false);
                 history.replaceState({ section: 'report', id: id }, '', hash);
             }
+        } else if (hash.startsWith('#blog-')) {
+            const id = parseInt(hash.replace('#blog-', ''));
+            if (!isNaN(id)) {
+                openBlogReport(id, false);
+                history.replaceState({ section: 'blog-report', id: id }, '', hash);
+            }
+        } else if (hash === '#blog') {
+            showSection('blog');
         } else if (hash === '#about') {
             showSection('about');
         }
@@ -763,6 +891,8 @@ document.addEventListener('DOMContentLoaded', () => {
             openSimulation(id, false); // false = don't push state again
         } else if (section === 'report' && id) {
             openReport(id, false);
+        } else if (section === 'blog-report' && id) {
+            openBlogReport(id, false);
         } else {
             showSection(section);
         }

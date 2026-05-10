@@ -61,6 +61,7 @@
             <h1 class="text-xl font-bold text-slate-800">Panel</h1>
             <div class="flex gap-4 items-center">
                 <button onclick="showProjectList()" class="text-slate-600 hover:text-blue-600">Projeler</button>
+                <button onclick="showBlogList()" class="text-slate-600 hover:text-blue-600">Blog</button>
                 <button onclick="openTokenModal()" class="text-slate-600 hover:text-blue-600">Token Güncelle</button>
                 <a href="index.html" class="text-slate-600 hover:text-blue-600">Siteye Dön</a>
                 <button onclick="logout()"
@@ -189,6 +190,110 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Blog List View -->
+            <div id="view-blog-list" class="hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Blog Yazıları</h2>
+                    <button onclick="showBlogEditForm()"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+                        <span>+</span> Yeni Yazı Ekle
+                    </button>
+                </div>
+                <div id="admin-blog-grid" class="space-y-4">
+                    <!-- Blogs injected here -->
+                </div>
+            </div>
+
+            <!-- Blog Edit Form View -->
+            <div id="view-blog-form" class="hidden">
+                <h2 id="blog-form-title" class="text-2xl font-bold mb-6">Yazı Düzenle</h2>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <input type="hidden" id="blog-edit-id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Başlık (TR)</label>
+                            <input type="text" id="blog-edit-title" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Başlık (EN)</label>
+                            <input type="text" id="blog-edit-title-en" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Kısa Açıklama (TR)</label>
+                            <input type="text" id="blog-edit-desc" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Kısa Açıklama (EN)</label>
+                            <input type="text" id="blog-edit-desc-en" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Tarih</label>
+                            <input type="date" id="blog-edit-date" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-sm font-medium text-slate-700">Kapak Resmi URL</label>
+                                <label class="cursor-pointer text-xs text-blue-600 hover:text-blue-800 hover:underline">
+                                    <span>📷 Bilgisayardan Seç</span>
+                                    <input type="file" accept="image/*" class="hidden"
+                                        onchange="uploadImageToGithub(this, 'blog-edit-image')">
+                                </label>
+                            </div>
+                            <input type="text" id="blog-edit-image" class="w-full px-3 py-2 border rounded-lg"
+                                placeholder="assets/images/blog-post.jpg">
+                        </div>
+                    </div>
+                    
+                    <!-- Content TR -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-medium text-slate-700">İçerik (Markdown - Türkçe)</label>
+                            <div class="flex gap-2">
+                                <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs px-3 py-1 rounded border border-slate-300 transition-colors">
+                                    <span>🖼️ Resim Ekle</span>
+                                    <input type="file" accept="image/*" class="hidden" onchange="insertImage(this, 'blog-edit-content')">
+                                </label>
+                                <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs px-3 py-1 rounded border border-slate-300 transition-colors">
+                                    <span>📁 Klasör Yükle</span>
+                                    <input type="file" webkitdirectory directory multiple class="hidden" onchange="handleFolderUpload(this, 'blog-edit-content')">
+                                </label>
+                            </div>
+                        </div>
+                        <textarea id="blog-edit-content" rows="15" class="w-full px-3 py-2 border rounded-lg font-mono text-sm" placeholder="# Başlık..."></textarea>
+                    </div>
+
+                    <!-- Content EN -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-medium text-slate-700">Content (Markdown - English)</label>
+                            <div class="flex gap-2">
+                                <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs px-3 py-1 rounded border border-slate-300 transition-colors">
+                                    <span>🖼️ Resim Ekle</span>
+                                    <input type="file" accept="image/*" class="hidden" onchange="insertImage(this, 'blog-edit-content-en')">
+                                </label>
+                                <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs px-3 py-1 rounded border border-slate-300 transition-colors">
+                                    <span>📁 Klasör Yükle</span>
+                                    <input type="file" webkitdirectory directory multiple class="hidden" onchange="handleFolderUpload(this, 'blog-edit-content-en')">
+                                </label>
+                            </div>
+                        </div>
+                        <textarea id="blog-edit-content-en" rows="15" class="w-full px-3 py-2 border rounded-lg font-mono text-sm" placeholder="# Title..."></textarea>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button onclick="saveBlog()"
+                            class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-bold">Kaydet</button>
+                        <button onclick="showBlogList()"
+                            class="px-6 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">İptal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
     </div>
 
