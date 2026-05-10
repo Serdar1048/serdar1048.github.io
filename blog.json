@@ -1,13 +1,1 @@
-[
-  {
-    "id": 1,
-    "title": "Veri Bilimi Yolculuğum",
-    "title_en": "My Data Science Journey",
-    "description": "Veri bilimi alanına nasıl giriş yaptığımı ve öğrendiklerimi paylaşıyorum.",
-    "description_en": "Sharing how I entered the field of data science and what I've learned.",
-    "date": "2026-05-10",
-    "image": "assets/images/blog1.jpg",
-    "content": "# Veri Bilimi Yolculuğum\n\nBu ilk blog yazım...",
-    "content_en": "# My Data Science Journey\n\nThis is my first blog post..."
-  }
-]
+[]
