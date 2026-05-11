@@ -134,35 +134,47 @@ iframe {
     /* Removes italic for cleaner look */
 }
 
-/* Code Blocks */
-#detail-description>pre {
-    background-color: #1f2937;
-    /* Dark bg */
-    color: #f3f4f6;
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    overflow-x: auto;
-    margin: 1.5rem 0;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
-    line-height: 1.5;
+/* --- Code Blocks Typography & Aesthetics --- */
+pre {
+    background-color: #282c34 !important; /* Atom One Dark background */
+    border-radius: 12px;
+    padding: 1.5rem !important;
+    margin: 1.5rem 0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
 }
 
-#detail-description>code {
-    background-color: #f3f4f6;
-    color: #ef4444;
-    /* Red for inline code */
-    padding: 0.2rem 0.4rem;
-    border-radius: 0.25rem;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-    font-weight: 500;
+code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace !important;
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    -webkit-font-smoothing: antialiased;
 }
 
-#detail-description>pre>code {
-    background-color: transparent;
-    color: inherit;
-    padding: 0;
+/* Inline Code */
+:not(pre) > code {
+    background-color: #f1f5f9 !important;
+    color: #ef4444 !important; /* Vibrant Red */
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Code block inner code */
+pre > code {
+    background-color: transparent !important;
+    color: #abb2bf !important; /* Default Atom One Dark text color */
+    padding: 0 !important;
+    display: block;
+    width: 100%;
+}
+
+/* Style the copy button wrapper specifically if needed */
+.code-wrapper pre {
+    margin: 0 !important;
 }
 
 /* Images */
