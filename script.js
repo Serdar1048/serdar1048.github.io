@@ -160,11 +160,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Markdown Renderer Setup (Copy Button) ---
     const renderer = new marked.Renderer();
-    renderer.code = function (code, language) {
-        const validLang = !!(language && hljs.getLanguage(language));
+    renderer.code = function (arg1, arg2) {
+        let code = arg1;
+        let language = arg2;
+
+        // Handle newer marked.js versions where the first argument is an object
+        if (typeof arg1 === 'object' && arg1 !== null) {
+            code = arg1.text || '';
+            language = arg1.lang || '';
+        }
+
+        // Safety check for Highlight.js (hljs)
+        const validLang = !!(language && typeof hljs !== 'undefined' && hljs.getLanguage(language));
         const highlighted = validLang ? hljs.highlight(code, { language }).value : code;
-        // Escape for attribute
-        const escapedCode = code.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$').replace(/"/g, '&quot;');
+
+        // Safely escape for the data-code attribute
+        const escapedCode = String(code).replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$').replace(/"/g, '&quot;');
 
         return `
             <div class="relative group my-4 code-wrapper">
@@ -585,72 +596,95 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Blog Report View ---
     window.openBlogReport = (id, shouldPushState = true) => {
-        console.log("Opening blog report for ID:", id);
+        console.log("Attempting to open blog report for ID:", id);
+        console.log("Current allBlogs state:", allBlogs);
+        
+        // Find the blog, being robust with ID types
         const blog = allBlogs.find(b => b.id == id);
+        
         if (!blog) {
             console.error("Blog not found for ID:", id, "Available blogs:", allBlogs);
+            // Fallback: If not found, at least show the blog list
+            showSection('blog');
             return;
         }
 
-        currentBlogId = id;
-        currentBlogLang = 'tr';
+        try {
+            currentBlogId = id;
+            currentBlogLang = 'tr';
 
-        // UI Updates
-        document.getElementById('blog-report-title-top').textContent = blog.title;
-        document.getElementById('blog-report-title').textContent = blog.title;
-        document.getElementById('blog-report-date').textContent = blog.date;
-        document.getElementById('blog-report-image').src = blog.image;
-        
-        const btnToggle = document.getElementById('blog-btn-lang-toggle');
-        if (blog.content_en && blog.content_en.trim() !== "") {
-            btnToggle.classList.remove('hidden');
-            document.getElementById('blog-lang-flag').textContent = '🇺🇸';
-            document.getElementById('blog-lang-text').textContent = 'English';
-        } else {
-            btnToggle.classList.add('hidden');
-        }
+            // Populate UI Elements
+            const titleTop = document.getElementById('blog-report-title-top');
+            const title = document.getElementById('blog-report-title');
+            const date = document.getElementById('blog-report-date');
+            const image = document.getElementById('blog-report-image');
 
-        renderBlogContent(blog);
-        generateTOC('blog-toc-container', 'blog-report-content');
+            if (titleTop) titleTop.textContent = blog.title;
+            if (title) title.textContent = blog.title;
+            if (date) date.textContent = blog.date;
+            if (image) image.src = blog.image;
 
-        // --- Next Blog Logic ---
-        const nextBlogContainer = document.getElementById('next-blog-container');
-        if (nextBlogContainer && allBlogs.length > 1) {
-            const currentIndex = allBlogs.findIndex(b => b.id == id);
-            if (currentIndex !== -1) {
-                const nextIndex = (currentIndex + 1) % allBlogs.length;
-                const nextBlog = allBlogs[nextIndex];
-                
-                const nextTitle = currentBlogLang === 'en' ? (nextBlog.title_en || nextBlog.title) : nextBlog.title;
-                const nextDesc = currentBlogLang === 'en' ? (nextBlog.description_en || nextBlog.description) : nextBlog.description;
+            // Setup Toggle Button
+            const btnToggle = document.getElementById('blog-btn-lang-toggle');
+            if (btnToggle) {
+                if (blog.content_en && blog.content_en.trim() !== "") {
+                    btnToggle.classList.remove('hidden');
+                    const flag = document.getElementById('blog-lang-flag');
+                    const text = document.getElementById('blog-lang-text');
+                    if (flag) flag.textContent = '🇺🇸';
+                    if (text) text.textContent = 'English';
+                } else {
+                    btnToggle.classList.add('hidden');
+                }
+            }
 
-                nextBlogContainer.innerHTML = `
-                    <div class="cursor-pointer group" onclick="openBlogReport(${nextBlog.id})">
-                        <div class="text-sm text-slate-500 mb-1 font-medium">Sıradaki Yazı</div>
-                        <div class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-primary/50 hover:bg-slate-50 transition-all duration-300">
-                            <div class="flex items-center gap-4">
-                                <img src="${nextBlog.image}" class="w-16 h-16 object-cover rounded-lg bg-slate-200" alt="${nextTitle}">
-                                <div>
-                                    <h4 class="text-lg font-bold text-slate-800 group-hover:text-primary transition-colors">${nextTitle}</h4>
-                                    <p class="text-sm text-slate-500 line-clamp-1">${nextDesc}</p>
+            console.log("Rendering blog content...");
+            renderBlogContent(blog);
+            
+            console.log("Generating TOC...");
+            generateTOC('blog-toc-container', 'blog-report-content');
+
+            // --- Next Blog Logic ---
+            const nextBlogContainer = document.getElementById('next-blog-container');
+            if (nextBlogContainer) {
+                if (allBlogs.length > 1) {
+                    const currentIndex = allBlogs.findIndex(b => b.id == id);
+                    if (currentIndex !== -1) {
+                        const nextIndex = (currentIndex + 1) % allBlogs.length;
+                        const nextBlog = allBlogs[nextIndex];
+
+                        nextBlogContainer.innerHTML = `
+                            <div class="cursor-pointer group" onclick="openBlogReport(${nextBlog.id})">
+                                <div class="text-sm text-slate-500 mb-1 font-medium">Sıradaki Yazı</div>
+                                <div class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-primary/50 hover:bg-slate-50 transition-all duration-300">
+                                    <div class="flex items-center gap-4">
+                                        <img src="${nextBlog.image}" class="w-16 h-16 object-cover rounded-lg bg-slate-200" alt="${nextBlog.title}">
+                                        <div>
+                                            <h4 class="text-lg font-bold text-slate-800 group-hover:text-primary transition-colors">${nextBlog.title}</h4>
+                                            <p class="text-sm text-slate-500 line-clamp-1">${nextBlog.excerpt || nextBlog.title}</p>
+                                        </div>
+                                    </div>
+                                    <svg class="w-6 h-6 text-slate-400 group-hover:text-primary group-hover:translate-x-2 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                    </svg>
                                 </div>
                             </div>
-                            <svg class="w-6 h-6 text-slate-400 group-hover:text-primary group-hover:translate-x-2 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </div>
-                    </div>
-                `;
-            } else {
-                nextBlogContainer.innerHTML = '';
+                        `;
+                    }
+                } else {
+                    nextBlogContainer.innerHTML = '';
+                }
             }
-        } else if (nextBlogContainer) {
-            nextBlogContainer.innerHTML = '';
-        }
 
-        showSection('blog-report', false);
-        if (shouldPushState) {
-            history.pushState({ section: 'blog-report', id: id }, '', '#blog-' + id);
+            console.log("Showing section blog-report...");
+            showSection('blog-report', false);
+
+            if (shouldPushState) {
+                history.pushState({ section: 'blog-report', id: id }, '', '#blog-' + id);
+            }
+        } catch (err) {
+            console.error("Critical error in openBlogReport:", err);
+            showSection('blog-report', false);
         }
     };
 
@@ -996,7 +1030,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!desktopContainer || !sourceContent) return;
 
         desktopContainer.innerHTML = '';
-        if (containerId === 'toc-container' && mobileContainer) mobileContainer.innerHTML = '';
+        
+        // Always clear mobile container if it exists
+        if (mobileContainer) mobileContainer.innerHTML = '';
 
         const headers = sourceContent.querySelectorAll('h1, h2, h3');
 
@@ -1035,7 +1071,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         headers.forEach((header) => {
             desktopContainer.appendChild(createLink(header, false));
-            if (containerId === 'toc-container' && mobileContainer) {
+            if (mobileContainer) {
                 mobileContainer.appendChild(createLink(header, true));
             }
         });
