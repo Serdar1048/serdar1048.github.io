@@ -189,15 +189,22 @@ pre>code {
 }
 
 /* Blog Report Images - Responsive and Full Width */
+.prose {
+    max-width: 100% !important;
+}
+
 .prose img,
 .markdown-body img,
-#blog-report-content img {
-    max-width: 100% !important;
+#blog-report-content img,
+#blog-report-image {
+    max-width: 100vw !important;
     height: auto !important;
-    width: 100% !important;
+    width: 100vw !important;
+    margin-left: calc(-50vw + 50%) !important;
     border-radius: 0.75rem !important;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-    margin: 2.5rem auto !important;
+    margin-top: 2.5rem !important;
+    margin-bottom: 2.5rem !important;
     display: block !important;
     object-fit: cover;
 }
