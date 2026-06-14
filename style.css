@@ -189,14 +189,17 @@ pre>code {
 }
 
 /* Blog Report Images - Responsive and Full Width */
+.prose img,
+.markdown-body img,
 #blog-report-content img {
     max-width: 100% !important;
     height: auto !important;
     width: 100% !important;
-    border-radius: 0.75rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
     margin: 2.5rem auto !important;
-    display: block;
+    display: block !important;
+    object-fit: cover;
 }
 
 /* Links */
