@@ -201,7 +201,7 @@ pre>code {
     object-fit: contain !important;
 }
 
-/* Markdown Content Images - Normal Width */
+/* Markdown Content Images - Normal Width, Quality Preserved */
 .prose img,
 .markdown-body img,
 #blog-report-content img {
@@ -212,11 +212,20 @@ pre>code {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
     margin: 2.5rem auto !important;
     display: block !important;
-    object-fit: cover;
+    object-fit: contain !important;
+    object-position: center !important;
 }
 
 /* Next Blog Navigation Images Stay Small */
 #next-blog-container img {
+    max-width: 4rem !important;
+    width: 4rem !important;
+    height: 4rem !important;
+    object-fit: cover !important;
+}
+
+/* Next Project Navigation Images Stay Small */
+#next-project-container img {
     max-width: 4rem !important;
     width: 4rem !important;
     height: 4rem !important;

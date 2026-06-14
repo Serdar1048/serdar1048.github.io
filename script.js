@@ -720,6 +720,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         renderBlogContent(blog);
+        generateTOC('blog-toc-container', 'blog-report-content');
+        generateTOC('mobile-toc-container', 'blog-report-content');
     };
 
     // --- Routing Handlers ---
