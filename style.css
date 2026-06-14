@@ -136,7 +136,8 @@ iframe {
 
 /* --- Code Blocks Typography & Aesthetics --- */
 pre {
-    background-color: #282c34 !important; /* Atom One Dark background */
+    background-color: #282c34 !important;
+    /* Atom One Dark background */
     border-radius: 12px;
     padding: 1.5rem !important;
     margin: 1.5rem 0 !important;
@@ -154,9 +155,10 @@ code {
 }
 
 /* Inline Code */
-:not(pre) > code {
+:not(pre)>code {
     background-color: #f1f5f9 !important;
-    color: #ef4444 !important; /* Vibrant Red */
+    color: #ef4444 !important;
+    /* Vibrant Red */
     padding: 0.2rem 0.4rem !important;
     border-radius: 6px !important;
     font-weight: 500 !important;
@@ -164,9 +166,10 @@ code {
 }
 
 /* Code block inner code */
-pre > code {
+pre>code {
     background-color: transparent !important;
-    color: #abb2bf !important; /* Default Atom One Dark text color */
+    color: #abb2bf !important;
+    /* Default Atom One Dark text color */
     padding: 0 !important;
     display: block;
     width: 100%;
@@ -183,6 +186,17 @@ pre > code {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     margin: 2.5rem auto;
     max-width: 100%;
+}
+
+/* Blog Report Images - Responsive and Full Width */
+#blog-report-content img {
+    max-width: 100% !important;
+    height: auto !important;
+    width: 100% !important;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    margin: 2.5rem auto !important;
+    display: block;
 }
 
 /* Links */
