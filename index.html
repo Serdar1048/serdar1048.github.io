@@ -634,14 +634,17 @@
         <!-- Blog Section -->
         <section id="blog" class="hidden py-20 bg-slate-50 min-h-screen">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold text-slate-900 mb-4">Blog</h2>
-                    <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-                        Veri bilimi, teknoloji ve kariyer üzerine paylaşımlarım.
-                    </p>
+                <div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-16">
+                    <!-- Blog Title and Description -->
+                    <div class="flex-1">
+                        <h2 class="text-4xl font-bold text-slate-900 mb-4">Blog</h2>
+                        <p class="text-lg text-slate-600">
+                            Veri bilimi, teknoloji ve kariyer üzerine paylaşımlarım.
+                        </p>
+                    </div>
 
-                    <!-- Language Toggle Buttons -->
-                    <div class="flex justify-center gap-3 mt-8">
+                    <!-- Language Toggle Buttons - Right Side -->
+                    <div class="flex gap-3 flex-col sm:flex-row whitespace-nowrap">
                         <button onclick="setBlogPageLanguage('tr')" id="blog-lang-btn-tr"
                             class="px-4 py-2 font-semibold text-sm rounded-lg border-2 border-primary bg-primary text-white transition-all hover:shadow-lg">
                             🇹🇷 Türkçe
