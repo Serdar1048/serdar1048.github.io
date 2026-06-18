@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global Project Data State
     let currentProjectId = null;
     let currentReportLang = 'tr'; // 'tr' or 'en'
+    let currentBlogPageLang = 'tr'; // Blog page (list) language, separate from blog detail language
 
     // --- SPA Logic (Single Page Application) ---
     const sections = {
@@ -574,34 +575,43 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        blogGrid.innerHTML = blogs.map((blog, index) => `
+        const readMoreTR = 'Okumaya Devam Et';
+        const readMoreEN = 'Read More';
+        const readMore = currentBlogPageLang === 'en' ? readMoreEN : readMoreTR;
+
+        blogGrid.innerHTML = blogs.map((blog, index) => {
+            const title = currentBlogPageLang === 'en' ? (blog.title_en || blog.title) : blog.title;
+            const description = currentBlogPageLang === 'en' ? (blog.description_en || blog.description) : blog.description;
+
+            return `
             <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-100 overflow-hidden group cursor-pointer animate-fade-in-up" 
                  style="animation-delay: ${index * 100}ms"
                  onclick="openBlogReport(${blog.id})">
                 <div class="h-48 overflow-hidden bg-slate-200 relative">
-                    <img src="${blog.image}" alt="${blog.title}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
+                    <img src="${blog.image}" alt="${title}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
                 </div>
                 <div class="p-6">
                     <div class="text-xs font-bold text-primary uppercase tracking-wider mb-2">${blog.date}</div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">${blog.title}</h3>
-                    <p class="text-slate-600 line-clamp-2">${blog.description}</p>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">${title}</h3>
+                    <p class="text-slate-600 line-clamp-2">${description}</p>
                     <div class="mt-4 flex items-center text-sm font-medium text-primary">
-                        Okumaya Devam Et
+                        ${readMore}
                         <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     // --- Blog Report View ---
     window.openBlogReport = (id, shouldPushState = true) => {
         console.log("Attempting to open blog report for ID:", id);
         console.log("Current allBlogs state:", allBlogs);
-        
+
         // Find the blog, being robust with ID types
         const blog = allBlogs.find(b => b.id == id);
-        
+
         if (!blog) {
             console.error("Blog not found for ID:", id, "Available blogs:", allBlogs);
             // Fallback: If not found, at least show the blog list
@@ -640,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log("Rendering blog content...");
             renderBlogContent(blog);
-            
+
             console.log("Generating TOC...");
             generateTOC('blog-toc-container', 'blog-report-content');
 
@@ -694,7 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalContent = content || blog.content;
 
         container.innerHTML = marked.parse(finalContent, { breaks: true });
-        
+
         // Update titles if English
         if (currentBlogLang === 'en') {
             document.getElementById('blog-report-title').textContent = blog.title_en || blog.title;
@@ -722,6 +732,38 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBlogContent(blog);
         generateTOC('blog-toc-container', 'blog-report-content');
         generateTOC('mobile-toc-container', 'blog-report-content');
+    };
+
+    // --- Blog Page Language Switcher ---
+    window.setBlogPageLanguage = (lang) => {
+        currentBlogPageLang = lang;
+
+        // Update button styles
+        const btnTr = document.getElementById('blog-lang-btn-tr');
+        const btnEn = document.getElementById('blog-lang-btn-en');
+
+        if (lang === 'tr') {
+            if (btnTr) {
+                btnTr.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
+                btnTr.classList.add('bg-primary', 'text-white', 'border-primary');
+            }
+            if (btnEn) {
+                btnEn.classList.remove('bg-primary', 'text-white', 'border-primary');
+                btnEn.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+            }
+        } else {
+            if (btnTr) {
+                btnTr.classList.remove('bg-primary', 'text-white', 'border-primary');
+                btnTr.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+            }
+            if (btnEn) {
+                btnEn.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
+                btnEn.classList.add('bg-primary', 'text-white', 'border-primary');
+            }
+        }
+
+        // Re-render blogs with new language
+        renderBlogs(allBlogs);
     };
 
     // --- Routing Handlers ---
@@ -1026,13 +1068,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function generateTOC(containerId = 'toc-container', contentId = 'report-content') {
         const desktopContainer = document.getElementById(containerId);
-        const mobileContainer = document.getElementById('mobile-toc-container'); 
+        const mobileContainer = document.getElementById('mobile-toc-container');
         const sourceContent = document.getElementById(contentId);
 
         if (!desktopContainer || !sourceContent) return;
 
         desktopContainer.innerHTML = '';
-        
+
         // Always clear mobile container if it exists
         if (mobileContainer) mobileContainer.innerHTML = '';
 
